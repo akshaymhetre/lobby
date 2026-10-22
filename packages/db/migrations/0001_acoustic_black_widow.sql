@@ -1,0 +1,1 @@
+ALTER TABLE "org_settings" ALTER COLUMN "accent_color" SET DEFAULT '#2A5FE6';

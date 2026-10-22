@@ -1,0 +1,74 @@
+/*
+ * ShimmerText: a highlight band moves through the glyphs. The band position is a registered
+ * custom property (--sh-x), so the animation is the property, not the background. The text's
+ * darkest colour is the base, which is AA on its own, so contrast never drops below AA at any
+ * point of the sweep.
+ *
+ * Light theme: the band is the accent text colour (darker and more saturated than the muted
+ * base), because a lighter band on a light page would lose contrast; the sweep reads as the
+ * label lighting up in blue. Dark theme: the band is white over the muted base.
+ */
+
+@property --sh-x {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: -30%;
+}
+
+.text {
+  --sh-base: var(--lb-muted);
+  --sh-hi: var(--lb-accent-text);
+  --sh-dur: 1.8s;
+  --sh-width: 22%;
+  color: var(--sh-base);
+}
+
+.text[data-tone="fg"] {
+  --sh-base: var(--lb-fg);
+  --sh-hi: var(--lb-accent-text);
+}
+
+:global(.dark) .text {
+  --sh-hi: #ffffff;
+}
+
+:global(.dark) .text[data-tone="fg"] {
+  --sh-hi: #ffffff;
+}
+
+.text[data-active="true"] {
+  background-image: linear-gradient(
+    90deg,
+    var(--sh-base) 0%,
+    var(--sh-base) calc(var(--sh-x) - var(--sh-width)),
+    var(--sh-hi) var(--sh-x),
+    var(--sh-base) calc(var(--sh-x) + var(--sh-width)),
+    var(--sh-base) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer var(--sh-dur) linear infinite;
+}
+
+.text[data-paused="true"] {
+  animation-play-state: paused;
+}
+
+@keyframes shimmer {
+  from {
+    --sh-x: -30%;
+  }
+  to {
+    --sh-x: 130%;
+  }
+}
+
+/* Reduced motion: static text in the base colour. */
+@media (prefers-reduced-motion: reduce) {
+  .text[data-active="true"] {
+    background-image: none;
+    color: var(--sh-base);
+    animation: none;
+  }
+}

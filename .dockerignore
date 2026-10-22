@@ -1,0 +1,23 @@
+# Keep the build context small and free of secrets and machine-specific files.
+.git
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/coverage
+**/*.tsbuildinfo
+**/*.log
+**/.DS_Store
+
+# Secrets and local configuration never go into an image.
+**/.env
+**/.env.*
+deploy/.env*
+data
+
+# Not needed to build or run Lobby.
+design/screens
+e2e
+test-results
+playwright-report
+docs

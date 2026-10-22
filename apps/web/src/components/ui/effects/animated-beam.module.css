@@ -1,0 +1,167 @@
+/*
+ * Animated connector beams. See animated-beam.tsx.
+ *
+ * Everything that moves here is a registered custom property (--ab-head) or stroke-dashoffset
+ * (paint only, no layout). The comet is stacked round-capped strokes (a gradient from a hot head
+ * to a fading tail) plus ONE small blurred dash for the 12px halo (wave 3), so energy reads at
+ * arm's length.
+ *
+ * Every path carries pathLength="1", so dash lengths are fractions of the path and the same
+ * keyframes serve a 40px stub and a 1200px fan line.
+ */
+
+/* Where the spark's head is, 0 = about to enter, 1 = fully gone. Inherited into the layers. */
+@property --ab-head {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+.svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.g {
+  pointer-events: none;
+  /* Per-tone colour, set inline by the component. Light: a saturated hue on a near-white surface. */
+  --ab-core: color-mix(in srgb, var(--ab-hue) 88%, black);
+  --ab-body: var(--ab-hue);
+  --ab-glow: var(--ab-hue);
+  --ab-line: color-mix(in srgb, var(--ab-hue) 55%, transparent);
+  --ab-hot: color-mix(in srgb, var(--ab-hue) 92%, black);
+  --ab-body-alpha: 0.95;
+  --ab-tail-alpha: 0.7;
+  /* Light: the halo is a coloured shadow on paper, about 35%. */
+  --ab-halo-alpha: 0.8;
+}
+
+/* Dark: the spark is additive light, a near-white head with the hue in the tail. */
+:global(.dark) .g {
+  --ab-core: color-mix(in srgb, white 82%, var(--ab-hue));
+  --ab-body: color-mix(in srgb, white 30%, var(--ab-hue));
+  --ab-glow: var(--ab-hue);
+  --ab-line: color-mix(in srgb, var(--ab-hue) 62%, transparent);
+  --ab-hot: color-mix(in srgb, white 55%, var(--ab-hue));
+  --ab-body-alpha: 1;
+  --ab-tail-alpha: 0.6;
+  /* Dark: emitted light, a strong blurred halo in the hue. */
+  --ab-halo-alpha: 1;
+}
+
+.g path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The quiet connector: always there, the same line the chart would draw with no effect. */
+.base {
+  stroke: var(--lb-border-strong);
+  stroke-width: var(--ab-w);
+}
+
+/* The lit line: the hue at low alpha, drawn on from the start (or the end, when reversed). */
+.lit {
+  stroke: var(--ab-line);
+  stroke-width: var(--ab-w);
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+}
+/* Dark: the lit connector itself glows, so the network reads as energised between comets. */
+:global(.dark) .lit {
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--ab-hue) 70%, transparent));
+}
+.lit[data-draw="before"] {
+  animation: draw var(--ab-draw) cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+/* The spark's first pass is the pen: same duration, same easing, same delay. */
+.lit[data-draw="with"] {
+  animation: draw var(--ab-dur) var(--ab-ease) var(--ab-delay) both;
+}
+.lit[data-dir="reverse"][data-draw] {
+  animation-name: drawReverse;
+}
+
+@keyframes draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes drawReverse {
+  from { stroke-dashoffset: -1; }
+  to { stroke-dashoffset: 0; }
+}
+
+/*
+ * The spark: four stacked dashes sharing one leading edge, each longer and fainter than the one
+ * above it, so the solid dashes add up to a bright head with a fading tail; plus two short, wide,
+ * faint dashes that sit around the head as the surface glow.
+ */
+.spark {
+  animation: travel var(--ab-dur) var(--ab-ease) var(--ab-delay) var(--ab-rep) both;
+}
+:global(.dark) .spark {
+  mix-blend-mode: screen;
+}
+.spark path {
+  /* --l is this layer's dash length as a fraction of the path; --ab-tail is the longest of them. */
+  stroke-dasharray: var(--l) 3;
+  stroke-dashoffset: calc(var(--l) - var(--ab-head) * (1 + var(--ab-tail)));
+}
+.spark[data-dir="reverse"] path {
+  stroke-dashoffset: calc(var(--ab-head) * (1 + var(--ab-tail)) - 1);
+}
+/* The comet, back to front: a blurred halo, two faint tail layers, the body, a hot band, the core. */
+.halo {
+  stroke: var(--ab-glow);
+  stroke-width: calc(var(--ab-w) * 16);
+  stroke-opacity: var(--ab-halo-alpha);
+}
+.tail2 {
+  stroke: var(--ab-glow);
+  stroke-width: calc(var(--ab-w) * 2);
+  stroke-opacity: calc(var(--ab-tail-alpha) * 0.5);
+}
+.tail {
+  stroke: var(--ab-glow);
+  stroke-width: calc(var(--ab-w) * 2.8);
+  stroke-opacity: var(--ab-tail-alpha);
+}
+.body {
+  stroke: var(--ab-body);
+  stroke-width: calc(var(--ab-w) * 3.4);
+  stroke-opacity: var(--ab-body-alpha);
+}
+.hot {
+  stroke: var(--ab-hot);
+  stroke-width: calc(var(--ab-w) * 3.8);
+}
+.core {
+  stroke: var(--ab-core);
+  stroke-width: calc(var(--ab-w) * 4.2);
+}
+
+@keyframes travel {
+  from { --ab-head: 0; }
+  to { --ab-head: 1; }
+}
+
+/* Off screen or in a hidden tab: hold still. */
+.paused,
+.paused .lit,
+.paused .spark {
+  animation-play-state: paused;
+}
+
+/* Reduced motion: the static lit line only. The component also stops rendering the spark. */
+@media (prefers-reduced-motion: reduce) {
+  .lit[data-draw] {
+    animation: none;
+  }
+  .spark {
+    display: none;
+  }
+}

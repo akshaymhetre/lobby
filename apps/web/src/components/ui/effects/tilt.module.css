@@ -1,0 +1,54 @@
+/*
+ * Tilt: the host rotates (transform written by the component from two springs); this module
+ * draws the specular sheen, a soft band of light that slides across the surface as the tile
+ * tilts. Position comes from --tp (0% to 100% along the band's axis) on the host.
+ *
+ * Light theme: a white band is invisible on a white tile, so the sheen is a white band flanked by
+ * a faint cool shade; the shade moving is what reads as gloss.
+ * Dark theme: a plain additive band (white at low alpha) over the teal glass.
+ */
+
+.sheen {
+  /* --tp is set inline on the host by the component. */
+  --tilt-p: var(--tp, 50%);
+  --tilt-sheen: rgb(255 255 255 / 0.7);
+  --tilt-shade: rgb(16 24 40 / 0.025);
+
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: none;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--tilt-o, 0);
+  transition: opacity 360ms var(--lb-ease, ease);
+  background: linear-gradient(
+    112deg,
+    var(--tilt-shade) 0%,
+    transparent calc(var(--tilt-p) - 28%),
+    var(--tilt-sheen) var(--tilt-p),
+    transparent calc(var(--tilt-p) + 28%),
+    var(--tilt-shade) 100%
+  );
+}
+
+:global(.dark) .sheen {
+  --tilt-sheen: rgb(230 247 255 / 0.11);
+  --tilt-shade: transparent;
+}
+
+:hover > .sheen {
+  transition-duration: 140ms;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sheen {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheen {
+    display: none;
+  }
+}

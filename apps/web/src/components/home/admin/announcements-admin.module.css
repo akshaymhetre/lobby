@@ -1,0 +1,26 @@
+/* The read-confirmation hero: one cell per person in the audience, filled as they confirm. */
+.cells {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14px, 1fr));
+  gap: 4px;
+}
+.cell {
+  height: 22px;
+  border-radius: 6px;
+  background: var(--lb-sunken);
+  box-shadow: inset 0 1px 0 rgb(0 0 0 / 0.03);
+}
+.cell[data-on] {
+  background-image: linear-gradient(180deg, var(--lb-cat-amber-from), var(--lb-cat-amber-to));
+  box-shadow: 0 1px 2px rgb(120 80 0 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.45);
+  opacity: 0;
+  scale: 0.6;
+  animation: fill 420ms var(--lb-ease) forwards;
+}
+@keyframes fill {
+  to { opacity: 1; scale: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cell[data-on] { animation: fade 200ms linear forwards; scale: 1; }
+  @keyframes fade { to { opacity: 1; } }
+}

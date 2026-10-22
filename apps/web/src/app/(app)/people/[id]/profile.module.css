@@ -1,0 +1,26 @@
+/*
+ * The profile hero's ambient light: the person's own colour (their avatar disc) as a soft bloom
+ * behind the face. Decorative, aria-hidden, never under text it could wash out.
+ */
+.aura {
+  position: absolute;
+  z-index: -1;
+  inset: -40% auto auto -12%;
+  width: 70%;
+  aspect-ratio: 1.6;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgb(from var(--aura) r g b / 0.34), rgb(from var(--aura) r g b / 0) 100%);
+  filter: blur(8px);
+}
+
+:global(.dark) .aura {
+  background: radial-gradient(closest-side, rgb(from var(--aura) r g b / 0.22), rgb(from var(--aura) r g b / 0) 100%);
+}
+
+/* The face sits on a white rim with a deep soft shadow, like a coin on the panel. */
+.face {
+  box-shadow:
+    0 0 0 4px var(--lb-raised),
+    0 18px 40px -14px rgb(from var(--aura, #6ea3ff) r g b / 0.65),
+    var(--lb-shadow-cell);
+}

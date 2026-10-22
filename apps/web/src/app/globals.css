@@ -1,0 +1,846 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Lobby design tokens, v2. Source of truth: design/DIRECTION-v2.md (direction card at the end).
+ *
+ * Tier 1 (raw) tokens are prefixed --lb-* and change per theme.
+ * Tier 2 is the `@theme inline` block below, which maps them to Tailwind utilities.
+ * Never give a theme key the same name as its source (`--color-x: var(--color-x)`):
+ * that is a circular reference and Tailwind drops the utility without an error.
+ *
+ * The token NAMES from v1 are kept (page, surface, sunken, raised, fg, muted, subtle, accent*,
+ * success/warning/danger/info + soft/text, border*, rail*, shadow-lift/popover/dialog, tints),
+ * so the ~40 screens restyle without edits. New in v2: canvas, now, the five category colours,
+ * glass, glow, the elevation shadows (slab, panel, cell) and the top highlight.
+ *
+ * Light: cool soft-tactile neutrals. Depth is tone + a soft shadow + a 1px top highlight.
+ * Dark: deep teal-black ambient ground, teal-tinted glass panels, soft coloured glows.
+ * The root layout overrides the six --lb-accent* tokens per theme from the org's brand colour.
+ */
+
+:root,
+.light {
+  color-scheme: light;
+
+  /* Ground. canvas sits behind the floating slab; page is the slab; surface is a panel on it;
+     raised is a cell on a panel; sunken is a well cut into a panel. */
+  --lb-canvas: #b9bfca;
+  --lb-page: #eef0f3;
+  --lb-surface: #f6f7f9;
+  --lb-raised: #ffffff;
+  --lb-sunken: #e5e8ed;
+  --lb-hover: rgb(16 24 40 / 0.05);
+  --lb-selected: rgb(16 24 40 / 0.08);
+  --lb-overlay: rgb(16 24 40 / 0.34);
+
+  /* Lines. Faint by design: elevation carries the structure, borders only separate rows. */
+  --lb-border: rgb(16 24 40 / 0.07);
+  --lb-border-strong: rgb(16 24 40 / 0.13);
+  /* Boundary of a control whose outline is its only identifier (checkbox, radio, switch): 3:1 per WCAG 1.4.11 */
+  --lb-control-border: #767f91;
+
+  /* Text */
+  --lb-fg: #141a26;
+  --lb-muted: #4f5869;
+  --lb-subtle: #5b6475;
+
+  /* Accent (default vivid blue; overridden by the root layout from the org's brand colour) */
+  --lb-accent: #2a5fe6;
+  --lb-accent-hover: #2353cf;
+  --lb-accent-fg: #ffffff;
+  --lb-accent-soft: #e4ebfd;
+  --lb-accent-text: #2353cf;
+  --lb-accent-ring: #4f7ff0;
+
+  /* "Now": the today column and the today line. A vivid blue, kept apart from the brand accent. */
+  --lb-now: #2767ec;
+  --lb-now-fg: #ffffff;
+  --lb-now-soft: #e3eeff;
+  --lb-now-text: #1d5fd1;
+
+  /* Reaction (likes): a warm coral, never danger red, never the accent. */
+  --lb-reaction: #c0432a;
+  --lb-reaction-soft: #fbe8e2;
+
+  /* Rail: the icon rail sits on the slab tone; the selected item is a raised white disc. */
+  --lb-rail: #eef0f3;
+  --lb-rail-selected: #ffffff;
+
+  /* Semantic: solid fill, text on solid, soft background, text on soft / surface */
+  --lb-success: #167a48;
+  --lb-success-fg: #ffffff;
+  --lb-success-soft: #dff4e7;
+  --lb-success-text: #136a3f;
+
+  --lb-warning: #a55f00;
+  --lb-warning-fg: #ffffff;
+  --lb-warning-soft: #fff0cc;
+  --lb-warning-text: #7d4a00;
+
+  --lb-danger: #c53a2d;
+  --lb-danger-fg: #ffffff;
+  --lb-danger-soft: #fde7e4;
+  --lb-danger-text: #ad3025;
+
+  --lb-info: #2a62d8;
+  --lb-info-fg: #ffffff;
+  --lb-info-soft: #e4ecfc;
+  --lb-info-text: #2453bd;
+
+  /* Categories: a vertical gradient (from -> to) with text `on` it, plus a soft tint with its own text.
+     violet = onboarding step, green = a first day, blue = request or approval under SLA,
+     amber = announcement deadline, coral = payday. Every pair measured for AA. */
+  --lb-cat-violet-from: #8a4ff5;
+  --lb-cat-violet-to: #6f36e6;
+  --lb-cat-violet-on: #ffffff;
+  --lb-cat-violet-soft: #ede6ff;
+  --lb-cat-violet-text: #6a30dc;
+
+  --lb-cat-green-from: #15834c;
+  --lb-cat-green-to: #107240;
+  --lb-cat-green-on: #ffffff;
+  --lb-cat-green-soft: #dcf5e6;
+  --lb-cat-green-text: #126c3e;
+
+  --lb-cat-blue-from: #2f6feb;
+  --lb-cat-blue-to: #2259d1;
+  --lb-cat-blue-on: #ffffff;
+  --lb-cat-blue-soft: #e1ebfe;
+  --lb-cat-blue-text: #1f55c9;
+
+  --lb-cat-amber-from: #ffd44a;
+  --lb-cat-amber-to: #f0b70a;
+  --lb-cat-amber-on: #3f2d00;
+  --lb-cat-amber-soft: #fff1c2;
+  --lb-cat-amber-text: #7a4e00;
+
+  --lb-cat-coral-from: #cc4a2e;
+  --lb-cat-coral-to: #b83e24;
+  --lb-cat-coral-on: #ffffff;
+  --lb-cat-coral-soft: #fde6df;
+  --lb-cat-coral-text: #a93a21;
+
+  /* Teal (wave 3): a sixth category for "working" / in progress, and for catalogues that need six. */
+  --lb-cat-teal-from: #0f7f86;
+  --lb-cat-teal-to: #0b6f75;
+  --lb-cat-teal-on: #ffffff;
+  --lb-cat-teal-soft: #d9f3f2;
+  --lb-cat-teal-text: #0b6a70;
+
+  /* Hero light sources (wave 3): one coloured light per hero card, tied to the data's tone.
+     Light theme: a tint you can see on white without washing it pink; dark: real emitted light. */
+  --lb-light-amber: rgb(240 170 20 / 0.30);
+  --lb-light-teal: rgb(16 160 160 / 0.24);
+  --lb-light-red: rgb(225 70 50 / 0.24);
+  --lb-light-blue: rgb(45 110 235 / 0.24);
+  --lb-light-violet: rgb(130 80 240 / 0.24);
+  --lb-light-green: rgb(30 150 85 / 0.24);
+  --lb-light-strength: 1;
+
+  /* Glass: one object per screen in light (the orb and the detail panel). */
+  --lb-hatch-bg: #e5e8ed;
+  --lb-hatch-line: rgb(20 26 38 / 0.08);
+  --lb-glass: rgb(255 255 255 / 0.72);
+  --lb-glass-strong: rgb(255 255 255 / 0.86);
+  --lb-glass-edge: rgb(255 255 255 / 0.9);
+
+  /* Glows: soft, coloured, used behind the orb and the panel only. */
+  --lb-glow-violet: rgb(117 86 242 / 0.22);
+  --lb-glow-gold: rgb(240 183 10 / 0.22);
+  --lb-glow-cyan: rgb(47 124 246 / 0.22);
+
+  /* Elevation. Tone first, then a soft, large, low-opacity shadow, then a 1px top highlight. */
+  --lb-highlight: inset 0 1px 0 rgb(255 255 255 / 0.95);
+  --lb-shadow-slab: 0 30px 80px -30px rgb(20 30 50 / 0.45), 0 2px 8px rgb(20 30 50 / 0.06), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --lb-shadow-panel: 0 1px 2px rgb(20 30 50 / 0.04), 0 16px 40px -16px rgb(20 30 50 / 0.24), inset 0 1px 0 rgb(255 255 255 / 0.95);
+  --lb-shadow-cell: 0 1px 2px rgb(20 30 50 / 0.06), 0 8px 18px -8px rgb(20 30 50 / 0.18), inset 0 1px 0 rgb(255 255 255 / 1);
+  --lb-shadow-cell-hover: 0 2px 4px rgb(20 30 50 / 0.06), 0 12px 24px -10px rgb(20 30 50 / 0.2), inset 0 1px 0 rgb(255 255 255 / 1);
+  --lb-shadow-lift: 0 1px 2px rgb(20 30 50 / 0.05), 0 4px 12px -6px rgb(20 30 50 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --lb-shadow-popover: 0 16px 40px -12px rgb(20 30 50 / 0.22), 0 2px 6px rgb(20 30 50 / 0.06), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --lb-shadow-dialog: 0 40px 90px -24px rgb(20 30 50 / 0.4), 0 4px 12px rgb(20 30 50 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --lb-shadow-inset: inset 0 1px 2px rgb(20 30 50 / 0.08), inset 0 0 0 1px rgb(20 30 50 / 0.05);
+
+  /* Avatar tints (cool, deterministic by name). bg / fg pairs, AA on each other. Kept for the
+     chips that still use them; generated avatars draw their own gradient discs. */
+  --lb-tint-1-bg: #e6e2ff; --lb-tint-1-fg: #4a35b8;
+  --lb-tint-2-bg: #dcf3e6; --lb-tint-2-fg: #1b6a40;
+  --lb-tint-3-bg: #ffe6dc; --lb-tint-3-fg: #a0391f;
+  --lb-tint-4-bg: #dcecff; --lb-tint-4-fg: #1d55bd;
+  --lb-tint-5-bg: #fff0c4; --lb-tint-5-fg: #764a00;
+  --lb-tint-6-bg: #e2eef0; --lb-tint-6-fg: #1f5b63;
+
+  /* Motion */
+  --lb-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --lb-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --lb-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --lb-dur-fast: 120ms;
+  --lb-dur-pop: 180ms;
+  --lb-dur-panel: 280ms;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --lb-canvas: #050d0f;
+  --lb-page: #0b191c;
+  --lb-surface: #11262b;
+  --lb-raised: #183238;
+  --lb-sunken: #08161a;
+  --lb-hover: rgb(150 225 235 / 0.07);
+  --lb-selected: rgb(150 225 235 / 0.12);
+  --lb-overlay: rgb(2 10 12 / 0.6);
+
+  --lb-border: rgb(160 225 235 / 0.09);
+  --lb-border-strong: rgb(160 225 235 / 0.16);
+  --lb-control-border: #6f8f94;
+
+  --lb-fg: #e9f2f3;
+  --lb-muted: #a3b7ba;
+  --lb-subtle: #8fa5a9;
+
+  --lb-accent: #6f9bff;
+  --lb-accent-hover: #83abff;
+  --lb-accent-fg: #061325;
+  --lb-accent-soft: #1b2f4d;
+  --lb-accent-text: #93b7ff;
+  --lb-accent-ring: #6f9bff;
+
+  --lb-now: #4f8dff;
+  --lb-now-fg: #06142a;
+  --lb-now-soft: #15304f;
+  --lb-now-text: #8fb6ff;
+
+  --lb-reaction: #f08a6c;
+  --lb-reaction-soft: #3a211a;
+
+  --lb-rail: #0b191c;
+  --lb-rail-selected: #1b3a41;
+
+  --lb-success: #4fc383;
+  --lb-success-fg: #04180c;
+  --lb-success-soft: #113125;
+  --lb-success-text: #7edca4;
+
+  --lb-warning: #e5b13f;
+  --lb-warning-fg: #1f1500;
+  --lb-warning-soft: #332a12;
+  --lb-warning-text: #f0c86a;
+
+  --lb-danger: #f07d6f;
+  --lb-danger-fg: #230b08;
+  --lb-danger-soft: #3b1f1b;
+  --lb-danger-text: #f59a8e;
+
+  --lb-info: #74a4f5;
+  --lb-info-fg: #061324;
+  --lb-info-soft: #16294a;
+  --lb-info-text: #9dbffa;
+
+  --lb-cat-violet-from: #8a4ff5;
+  --lb-cat-violet-to: #6f36e6;
+  --lb-cat-violet-on: #ffffff;
+  --lb-cat-violet-soft: #2a1f52;
+  --lb-cat-violet-text: #c3adff;
+
+  --lb-cat-green-from: #15834c;
+  --lb-cat-green-to: #107240;
+  --lb-cat-green-on: #ffffff;
+  --lb-cat-green-soft: #12362a;
+  --lb-cat-green-text: #7ddfa6;
+
+  --lb-cat-blue-from: #2f6feb;
+  --lb-cat-blue-to: #2259d1;
+  --lb-cat-blue-on: #ffffff;
+  --lb-cat-blue-soft: #16304f;
+  --lb-cat-blue-text: #9dbffa;
+
+  /* Dark amber is a warm gold with dark ink: the old deep fill read as brown on teal-black. */
+  --lb-cat-amber-from: #e9b43c;
+  --lb-cat-amber-to: #c98f12;
+  --lb-cat-amber-on: #2a1d00;
+  --lb-cat-amber-soft: #3a2f10;
+  --lb-cat-amber-text: #f3cd6a;
+
+  --lb-cat-coral-from: #cc4a2e;
+  --lb-cat-coral-to: #b83e24;
+  --lb-cat-coral-on: #ffffff;
+  --lb-cat-coral-soft: #3d2019;
+  --lb-cat-coral-text: #f6a08a;
+
+  --lb-cat-teal-from: #0f7f86;
+  --lb-cat-teal-to: #0b6f75;
+  --lb-cat-teal-on: #ffffff;
+  --lb-cat-teal-soft: #0f3638;
+  --lb-cat-teal-text: #74d9d6;
+
+  /* Dark: the light sources are emitted, saturated and wide; this is the wow of the dark theme. */
+  --lb-light-amber: rgb(255 176 40 / 0.42);
+  --lb-light-teal: rgb(40 220 210 / 0.36);
+  --lb-light-red: rgb(255 80 60 / 0.42);
+  --lb-light-blue: rgb(80 140 255 / 0.42);
+  --lb-light-violet: rgb(150 100 255 / 0.42);
+  --lb-light-green: rgb(60 210 130 / 0.36);
+  --lb-light-strength: 1;
+
+  /* Glass is the material in dark: teal-tinted, blurred, with a lighter top edge. */
+  --lb-hatch-bg: #10262b;
+  --lb-hatch-line: rgb(160 225 235 / 0.07);
+  --lb-glass: rgb(18 48 54 / 0.58);
+  --lb-glass-strong: rgb(20 52 58 / 0.78);
+  --lb-glass-edge: rgb(170 235 240 / 0.22);
+
+  --lb-glow-violet: rgb(139 108 255 / 0.4);
+  --lb-glow-gold: rgb(255 196 80 / 0.32);
+  --lb-glow-cyan: rgb(80 220 230 / 0.32);
+
+  /* Dark elevation: a lighter top edge plus a deep, soft drop. Raised surfaces step LIGHTER. */
+  --lb-highlight: inset 0 1px 0 rgb(170 235 240 / 0.14);
+  --lb-shadow-slab: 0 40px 100px -30px rgb(0 0 0 / 0.8), 0 0 0 1px rgb(160 225 235 / 0.06), inset 0 1px 0 rgb(170 235 240 / 0.12);
+  --lb-shadow-panel: 0 14px 40px -18px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(160 225 235 / 0.05), inset 0 1px 0 rgb(170 235 240 / 0.12);
+  --lb-shadow-cell: 0 8px 20px -10px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(160 225 235 / 0.06), inset 0 1px 0 rgb(170 235 240 / 0.14);
+  --lb-shadow-cell-hover: 0 14px 30px -12px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(160 225 235 / 0.12), inset 0 1px 0 rgb(170 235 240 / 0.18);
+  --lb-shadow-lift: 0 0 0 1px rgb(160 225 235 / 0.06), inset 0 1px 0 rgb(170 235 240 / 0.1);
+  --lb-shadow-popover: 0 0 0 1px rgb(160 225 235 / 0.1), 0 20px 50px -16px rgb(0 0 0 / 0.75), inset 0 1px 0 rgb(170 235 240 / 0.14);
+  --lb-shadow-dialog: 0 0 0 1px rgb(160 225 235 / 0.1), 0 40px 90px -24px rgb(0 0 0 / 0.85), inset 0 1px 0 rgb(170 235 240 / 0.14);
+  --lb-shadow-inset: inset 0 1px 2px rgb(0 0 0 / 0.5), inset 0 0 0 1px rgb(160 225 235 / 0.08);
+
+  --lb-tint-1-bg: #2b2655; --lb-tint-1-fg: #c9bdff;
+  --lb-tint-2-bg: #15382a; --lb-tint-2-fg: #9fe3bb;
+  --lb-tint-3-bg: #45241a; --lb-tint-3-fg: #ffc3ad;
+  --lb-tint-4-bg: #183152; --lb-tint-4-fg: #a9c8ff;
+  --lb-tint-5-bg: #3d3012; --lb-tint-5-fg: #f5d58a;
+  --lb-tint-6-bg: #173a40; --lb-tint-6-fg: #a4dde5;
+}
+
+@theme inline {
+  --color-canvas: var(--lb-canvas);
+  --color-page: var(--lb-page);
+  --color-surface: var(--lb-surface);
+  --color-raised: var(--lb-raised);
+  --color-sunken: var(--lb-sunken);
+  --color-hover: var(--lb-hover);
+  --color-selected: var(--lb-selected);
+  --color-overlay: var(--lb-overlay);
+  --color-glass: var(--lb-glass);
+  --color-glass-strong: var(--lb-glass-strong);
+  --color-glass-edge: var(--lb-glass-edge);
+
+  --color-border: var(--lb-border);
+  --color-border-strong: var(--lb-border-strong);
+  --color-control-border: var(--lb-control-border);
+
+  --color-fg: var(--lb-fg);
+  --color-muted: var(--lb-muted);
+  --color-subtle: var(--lb-subtle);
+
+  --color-accent: var(--lb-accent);
+  --color-accent-hover: var(--lb-accent-hover);
+  --color-accent-fg: var(--lb-accent-fg);
+  --color-accent-soft: var(--lb-accent-soft);
+  --color-accent-text: var(--lb-accent-text);
+  --color-accent-ring: var(--lb-accent-ring);
+
+  --color-now: var(--lb-now);
+  --color-now-fg: var(--lb-now-fg);
+  --color-now-soft: var(--lb-now-soft);
+  --color-now-text: var(--lb-now-text);
+
+  --color-reaction: var(--lb-reaction);
+  --color-reaction-soft: var(--lb-reaction-soft);
+
+  --color-rail: var(--lb-rail);
+  --color-rail-selected: var(--lb-rail-selected);
+
+  --color-success: var(--lb-success);
+  --color-success-fg: var(--lb-success-fg);
+  --color-success-soft: var(--lb-success-soft);
+  --color-success-text: var(--lb-success-text);
+  --color-warning: var(--lb-warning);
+  --color-warning-fg: var(--lb-warning-fg);
+  --color-warning-soft: var(--lb-warning-soft);
+  --color-warning-text: var(--lb-warning-text);
+  --color-danger: var(--lb-danger);
+  --color-danger-fg: var(--lb-danger-fg);
+  --color-danger-soft: var(--lb-danger-soft);
+  --color-danger-text: var(--lb-danger-text);
+  --color-info: var(--lb-info);
+  --color-info-fg: var(--lb-info-fg);
+  --color-info-soft: var(--lb-info-soft);
+  --color-info-text: var(--lb-info-text);
+
+  --color-cat-violet: var(--lb-cat-violet-to);
+  --color-cat-violet-soft: var(--lb-cat-violet-soft);
+  --color-cat-violet-text: var(--lb-cat-violet-text);
+  --color-cat-green: var(--lb-cat-green-to);
+  --color-cat-green-soft: var(--lb-cat-green-soft);
+  --color-cat-green-text: var(--lb-cat-green-text);
+  --color-cat-blue: var(--lb-cat-blue-to);
+  --color-cat-blue-soft: var(--lb-cat-blue-soft);
+  --color-cat-blue-text: var(--lb-cat-blue-text);
+  --color-cat-amber: var(--lb-cat-amber-to);
+  --color-cat-amber-soft: var(--lb-cat-amber-soft);
+  --color-cat-amber-text: var(--lb-cat-amber-text);
+  --color-cat-coral: var(--lb-cat-coral-to);
+  --color-cat-coral-soft: var(--lb-cat-coral-soft);
+  --color-cat-coral-text: var(--lb-cat-coral-text);
+  --color-cat-teal: var(--lb-cat-teal-to);
+  --color-cat-teal-soft: var(--lb-cat-teal-soft);
+  --color-cat-teal-text: var(--lb-cat-teal-text);
+
+  --shadow-lift: var(--lb-shadow-lift);
+  --shadow-popover: var(--lb-shadow-popover);
+  --shadow-dialog: var(--lb-shadow-dialog);
+  --shadow-slab: var(--lb-shadow-slab);
+  --shadow-panel: var(--lb-shadow-panel);
+  --shadow-cell: var(--lb-shadow-cell);
+  --shadow-cell-hover: var(--lb-shadow-cell-hover);
+  --shadow-inset: var(--lb-shadow-inset);
+  --shadow-highlight: var(--lb-highlight);
+  --shadow-glow-violet: 0 0 60px 0 var(--lb-glow-violet);
+  --shadow-glow-gold: 0 0 60px 0 var(--lb-glow-gold);
+  --shadow-glow-cyan: 0 0 60px 0 var(--lb-glow-cyan);
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* No serif in v2: the alias keeps the v1 `font-serif` classes compiling and renders the sans. */
+  --font-serif: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --ease-standard: var(--lb-ease);
+  --ease-expo: var(--lb-ease-expo);
+  --ease-drawer: var(--lb-ease-drawer);
+}
+
+/* Theme-invariant scales: declared once, not per theme. */
+@theme {
+  /* Page widths. Exactly three: wide (most pages), prose (reading and forms), full (tables, boards, trees).
+     Pages pick one through <Page width>; nothing else sets a max width on a page. */
+  --container-page-wide: 1320px;
+  --container-page-prose: 760px;
+
+  /* Radii: concentric. slab 28 > panel 24 > card 16 > cell 12 > control 10. */
+  --radius-control: 10px;
+  --radius-cell: 12px;
+  --radius-card: 16px;
+  --radius-panel: 24px;
+  --radius-dialog: 24px;
+  --radius-slab: 28px;
+
+  /* Type scale, wave 3 ("type with confidence"). Levels separate by a jump in SIZE, not by greyer
+     text. 13px is the floor for any text in the product: metadata (caption) and secondary (small)
+     share it and differ by colour and weight. Primary row text is `row` (15px). */
+  --text-caption: 13px;
+  --text-caption--line-height: 18px;
+  --text-small: 13px;
+  --text-small--line-height: 18px;
+  --text-body: 14px;
+  --text-body--line-height: 20px;
+  --text-row: 15px;
+  --text-row--line-height: 22px;
+  --text-row--letter-spacing: -0.003em;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 24px;
+  --text-h4: 18px;
+  --text-h4--line-height: 26px;
+  --text-h4--letter-spacing: -0.01em;
+  --text-h3: 20px;
+  --text-h3--line-height: 28px;
+  --text-h3--letter-spacing: -0.012em;
+  --text-h2: 24px;
+  --text-h2--line-height: 32px;
+  --text-h2--letter-spacing: -0.016em;
+  --text-h1: 30px;
+  --text-h1--line-height: 38px;
+  --text-h1--letter-spacing: -0.02em;
+  /* Hero card titles: the title inside the one hero module on a screen. */
+  --text-hero: 32px;
+  --text-hero--line-height: 38px;
+  --text-hero--letter-spacing: -0.02em;
+  /* Page titles on phones (the Masthead below md). */
+  --text-title-sm: 34px;
+  --text-title-sm--line-height: 40px;
+  --text-title-sm--letter-spacing: -0.02em;
+  /* Page titles: 44px at weight 500, -2% tracking, about 3x body like the reference's section titles. */
+  --text-title: 44px;
+  --text-title--line-height: 50px;
+  --text-title--letter-spacing: -0.02em;
+  /* The Home greeting: larger than any page title. */
+  --text-display: 52px;
+  --text-display--line-height: 58px;
+  --text-display--letter-spacing: -0.025em;
+
+  --animate-fade-in: lb-fade-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  --animate-fade-out: lb-fade-out 120ms cubic-bezier(0.23, 1, 0.32, 1);
+  --animate-pop-in: lb-pop-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  --animate-pop-out: lb-pop-out 120ms cubic-bezier(0.23, 1, 0.32, 1);
+  --animate-dialog-in: lb-dialog-in 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dialog-out: lb-fade-out 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  --animate-sheet-in-right: lb-sheet-in-right 320ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-sheet-out-right: lb-sheet-out-right 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-sheet-in-left: lb-sheet-in-left 320ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-sheet-out-left: lb-sheet-out-left 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-sheet-in-bottom: lb-sheet-in-bottom 320ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-sheet-out-bottom: lb-sheet-out-bottom 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-shimmer: lb-shimmer 1.6s ease-in-out infinite;
+  --animate-spin-slow: spin 0.9s linear infinite;
+  --animate-node-pulse: lb-node-pulse 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes lb-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lb-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes lb-pop-in { from { opacity: 0; transform: scale(0.96) translateY(-3px); } to { opacity: 1; transform: none; } }
+@keyframes lb-pop-out { from { opacity: 1; } to { opacity: 0; transform: scale(0.98); } }
+@keyframes lb-dialog-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes lb-sheet-in-right { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes lb-sheet-out-right { from { transform: none; } to { transform: translateX(100%); } }
+@keyframes lb-sheet-in-left { from { transform: translateX(-100%); } to { transform: none; } }
+@keyframes lb-sheet-out-left { from { transform: none; } to { transform: translateX(-100%); } }
+@keyframes lb-sheet-in-bottom { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes lb-sheet-out-bottom { from { transform: none; } to { transform: translateY(100%); } }
+@keyframes lb-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+/* A comet arriving at a node: a ring that swells out of the node and fades, plus a brief brighten. */
+@keyframes lb-node-pulse {
+  0% { box-shadow: 0 0 0 0 var(--pulse-color, var(--lb-accent)), 0 0 0 0 transparent; }
+  30% { box-shadow: 0 0 0 6px color-mix(in oklch, var(--pulse-color, var(--lb-accent)) 45%, transparent), 0 0 28px 8px color-mix(in oklch, var(--pulse-color, var(--lb-accent)) 45%, transparent); }
+  100% { box-shadow: 0 0 0 14px transparent, 0 0 28px 10px transparent; }
+}
+/* The now rail's travelling glint. */
+@keyframes lb-rail-glint {
+  0% { background-position: 0 -40%; }
+  100% { background-position: 0 140%; }
+}
+/* A hero light breathing very slowly, so the room feels lit rather than painted. */
+@keyframes lb-light-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.92; }
+  50% { transform: translate3d(2%, 3%, 0) scale(1.06); opacity: 1; }
+}
+/* Reduced motion: no transforms anywhere, opacity only. Later @keyframes win. */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes lb-pop-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes lb-pop-out { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes lb-dialog-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes lb-sheet-in-right { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes lb-sheet-out-right { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes lb-sheet-in-left { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes lb-sheet-out-left { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes lb-sheet-in-bottom { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes lb-sheet-out-bottom { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes lb-shimmer { 0%, 100% { opacity: 1; } }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-property: opacity, color, background-color, border-color, outline-color, box-shadow !important;
+  }
+  .motion-transform-none,
+  [data-press] {
+    transform: none !important;
+  }
+}
+
+/* Keyboard focus: 2px accent ring, 2px offset, always visible. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--lb-accent-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Hit area grows to 44px on touch pointers without changing the visual size. */
+@utility touch-target {
+  position: relative;
+  @media (pointer: coarse) {
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: max(100%, 44px);
+      height: max(100%, 44px);
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Press and hover-lift: the response motion for every raised control. */
+@utility press {
+  transition-property: transform, box-shadow, background-color, color, border-color;
+  transition-duration: 160ms;
+  transition-timing-function: var(--lb-ease);
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+    transition-duration: 120ms;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+  }
+}
+
+/* A raised white cell: tone + soft shadow + 1px top highlight. The tactile surface of v2. */
+@utility cell {
+  background-color: var(--lb-raised);
+  box-shadow: var(--lb-shadow-cell);
+}
+
+/* A panel inset on the slab. */
+@utility panel {
+  background-color: var(--lb-surface);
+  box-shadow: var(--lb-shadow-panel);
+}
+
+/* The active pill in every PillNav: a raised cell in light; in dark a lit glass pill with a cyan breath. */
+@utility pill-active {
+  background-color: var(--lb-raised);
+  box-shadow: var(--lb-shadow-cell);
+}
+.dark .pill-active {
+  background-image: linear-gradient(180deg, rgb(170 235 240 / 0.16), rgb(170 235 240 / 0.04));
+  box-shadow: var(--lb-shadow-cell), 0 0 22px -6px var(--lb-glow-cyan);
+}
+
+/* Glass: backdrop blur + tinted fill + a lighter top edge. One per screen in light mode. */
+@utility glass {
+  background-color: var(--lb-glass);
+  backdrop-filter: blur(24px) saturate(130%);
+  box-shadow: inset 0 1px 0 var(--lb-glass-edge), var(--lb-shadow-panel);
+}
+
+/* Hatched cell for non-working days. */
+@utility hatch {
+  background-color: var(--lb-hatch-bg);
+  background-image: repeating-linear-gradient(135deg, transparent 0 5px, var(--lb-hatch-line) 5px 6px);
+}
+
+/* Category gradients. Text colour comes with the block so AA holds on every stop. */
+@utility cat-violet {
+  background-image: linear-gradient(180deg, var(--lb-cat-violet-from), var(--lb-cat-violet-to));
+  color: var(--lb-cat-violet-on);
+}
+@utility cat-green {
+  background-image: linear-gradient(180deg, var(--lb-cat-green-from), var(--lb-cat-green-to));
+  color: var(--lb-cat-green-on);
+}
+@utility cat-blue {
+  background-image: linear-gradient(180deg, var(--lb-cat-blue-from), var(--lb-cat-blue-to));
+  color: var(--lb-cat-blue-on);
+}
+@utility cat-amber {
+  background-image: linear-gradient(180deg, var(--lb-cat-amber-from), var(--lb-cat-amber-to));
+  color: var(--lb-cat-amber-on);
+}
+@utility cat-coral {
+  background-image: linear-gradient(180deg, var(--lb-cat-coral-from), var(--lb-cat-coral-to));
+  color: var(--lb-cat-coral-on);
+}
+@utility cat-teal {
+  background-image: linear-gradient(180deg, var(--lb-cat-teal-from), var(--lb-cat-teal-to));
+  color: var(--lb-cat-teal-on);
+}
+
+/* The dashed "now" line (vertical). Kept for compatibility; wave 3 screens use `now-rail`. */
+@utility now-line {
+  background-image: repeating-linear-gradient(180deg, var(--lb-now) 0 6px, transparent 6px 11px);
+}
+
+/*
+ * The glowing "now" rail (wave 3), replacing the dashed hairline. Put it on a 2px-wide (vertical)
+ * or 2px-tall (`now-rail-x`) absolutely positioned element. A solid now-blue core, a coloured
+ * outer glow that reads at arm's length, and a glint that travels along it every few seconds.
+ * The glint stops under reduced motion; the glow stays.
+ */
+@utility now-rail {
+  background-color: var(--lb-now);
+  background-image: linear-gradient(180deg, transparent 0%, rgb(255 255 255 / 0.95) 50%, transparent 100%);
+  background-size: 100% 22%;
+  background-repeat: no-repeat;
+  background-position: 0 -40%;
+  border-radius: 999px;
+  box-shadow:
+    0 0 6px 0 color-mix(in oklch, var(--lb-now) 70%, transparent),
+    0 0 18px 2px color-mix(in oklch, var(--lb-now) 38%, transparent);
+  animation: lb-rail-glint 3.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) 0.6s infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background-image: none;
+  }
+}
+@utility now-rail-x {
+  background-color: var(--lb-now);
+  background-image: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.95) 50%, transparent 100%);
+  background-size: 22% 100%;
+  background-repeat: no-repeat;
+  border-radius: 999px;
+  box-shadow:
+    0 0 6px 0 color-mix(in oklch, var(--lb-now) 70%, transparent),
+    0 0 18px 2px color-mix(in oklch, var(--lb-now) 38%, transparent);
+}
+.dark .now-rail,
+.dark .now-rail-x {
+  box-shadow:
+    0 0 8px 1px color-mix(in oklch, var(--lb-now) 90%, transparent),
+    0 0 26px 4px color-mix(in oklch, var(--lb-now) 55%, transparent),
+    0 0 60px 10px color-mix(in oklch, var(--lb-now) 22%, transparent);
+}
+/* The rail's head: a lit disc for the top of a now rail (or a "today" pill's anchor). */
+@utility now-dot {
+  background: var(--lb-now);
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--lb-now) 25%, transparent), 0 0 14px 3px color-mix(in oklch, var(--lb-now) 55%, transparent);
+}
+
+/*
+ * A lit panel (wave 3): a hero card with ONE coloured light source tied to its data.
+ * `panel-lit` + a tone (`lit-amber` due, `lit-teal` working, `lit-red` breaching, `lit-blue` info,
+ * `lit-violet`, `lit-green`) paints the panel tone, a radial light from the top-left (move it with
+ * `--lit-x` / `--lit-y`) and a tinted top edge. Use the <HeroLight> component instead when the
+ * host already owns its background, or for the slow breathing drift.
+ */
+@utility panel-lit {
+  --lit: var(--lb-light-blue);
+  background-color: var(--lb-surface);
+  background-image:
+    radial-gradient(70% 90% at var(--lit-x, 12%) var(--lit-y, 0%), var(--lit) 0%, color-mix(in oklch, var(--lit) 40%, transparent) 38%, transparent 72%);
+  box-shadow: var(--lb-shadow-panel), inset 0 1px 0 color-mix(in srgb, var(--lit) 50%, rgb(255 255 255 / 0.85));
+}
+@utility lit-amber { --lit: var(--lb-light-amber); }
+@utility lit-teal { --lit: var(--lb-light-teal); }
+@utility lit-red { --lit: var(--lb-light-red); }
+@utility lit-blue { --lit: var(--lb-light-blue); }
+@utility lit-violet { --lit: var(--lb-light-violet); }
+@utility lit-green { --lit: var(--lb-light-green); }
+
+/* A comet's arrival: set data-pulse on the target node (pulseNode() does it) to swell a ring in the tone. */
+[data-pulse="on"] {
+  animation: var(--animate-node-pulse);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-pulse="on"] { animation: none; }
+}
+
+/*
+ * Section rhythm. One vertical rhythm for every page:
+ *   section-stack   40px between the sections of a page (the page body)
+ *   section-group   24px between a section's heading block and its content
+ *   section-content 16px between siblings inside a section (rows, fields, cards)
+ */
+@utility section-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+@utility section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@utility section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    scrollbar-color: var(--lb-border-strong) transparent;
+    accent-color: var(--lb-accent);
+    background-color: var(--lb-canvas);
+  }
+
+  body {
+    background-color: var(--lb-canvas);
+    color: var(--lb-fg);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 20px;
+    font-feature-settings: "ss01" off;
+  }
+
+  /* The dark slab carries the ambient radial: a lit teal centre at the top, a vignette at the edges. */
+  .dark .slab {
+    background-image:
+      radial-gradient(110% 60% at 50% 0%, rgb(22 66 74 / 0.75) 0%, rgb(13 36 41 / 0.4) 40%, transparent 70%),
+      radial-gradient(70% 50% at 100% 100%, rgb(16 50 58 / 0.55) 0%, transparent 60%);
+  }
+
+  /* The dark canvas is an ambient radial: a lit centre, a vignette at the edges. */
+  .dark body {
+    background-image:
+      radial-gradient(120% 80% at 50% 0%, rgb(18 60 68 / 0.55) 0%, transparent 60%),
+      radial-gradient(80% 60% at 100% 100%, rgb(14 44 52 / 0.5) 0%, transparent 55%);
+    background-attachment: fixed;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: var(--lb-border);
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--lb-accent) 26%, transparent);
+    color: inherit;
+  }
+
+  input,
+  textarea,
+  [contenteditable] {
+    caret-color: var(--lb-accent);
+  }
+
+  /* Tailwind v4 preflight sets buttons to cursor: default, which reads as disabled. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  select,
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"],
+  input:disabled,
+  textarea:disabled,
+  select:disabled,
+  [data-disabled] {
+    cursor: not-allowed;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--lb-subtle);
+    opacity: 1;
+  }
+
+  /* Headings are large and light in v2: weight 500, never bold. */
+  h1, h2, h3, h4 {
+    font-weight: 500;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* Applied for two frames while the theme switches, so colours change instantly instead of animating. */
+.theme-switching,
+.theme-switching * {
+  transition: none !important;
+}
+

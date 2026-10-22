@@ -1,0 +1,19 @@
+# Lobby reverse proxy.
+#
+# LOBBY_SITE_ADDRESS is written by deploy/setup.sh:
+#   lobby.example.com   a real domain: Caddy gets and renews a Let's Encrypt certificate itself
+#                       (ports 80 and 443 must reach this machine, and DNS must point here)
+#   :80                 a local install: plain HTTP, published on LOBBY_HTTP_PORT (e.g. 4100)
+{
+	admin off
+}
+
+{$LOBBY_SITE_ADDRESS} {
+	encode zstd gzip
+	reverse_proxy web:3000
+	header {
+		-Server
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Content-Type-Options nosniff
+	}
+}

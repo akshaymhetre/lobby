@@ -1,0 +1,208 @@
+/*
+ * The Knowledge constellation (wave 3). See knowledge-constellation.tsx.
+ * Everything here animates transform, opacity or stroke-dashoffset only, and stops under
+ * reduced motion. Colours come from the freshness tokens set inline as --c.
+ */
+
+.stage {
+  /* Freshness as light: the main hue (--k-*) and its deep stop (--k-*-2). Dark lifts each to its bright text tone. */
+  --k-verified: var(--lb-cat-green-from);
+  --k-verified-2: var(--lb-cat-green-to);
+  --k-due: var(--lb-cat-amber-to);
+  --k-due-2: color-mix(in srgb, var(--lb-cat-amber-to) 80%, var(--lb-cat-amber-on));
+  --k-stale: var(--lb-cat-coral-from);
+  --k-stale-2: var(--lb-cat-coral-to);
+  --k-unset: var(--lb-subtle);
+  --k-unset-2: var(--lb-subtle);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  touch-action: manipulation;
+  /* The camera clips at the stage edge; fade the edge so a zoom reads as a lens, not a crop. */
+  mask-image: linear-gradient(to bottom, transparent 0, black 24px, black calc(100% - 24px), transparent 100%),
+    linear-gradient(to right, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
+  mask-composite: intersect;
+}
+
+:global(.dark) .stage {
+  --k-verified: var(--lb-cat-green-text);
+  --k-verified-2: var(--lb-cat-green-from);
+  --k-due: var(--lb-cat-amber-from);
+  --k-due-2: var(--lb-cat-amber-to);
+  --k-stale: var(--lb-cat-coral-text);
+  --k-stale-2: var(--lb-cat-coral-from);
+}
+
+/* The camera: everything that zooms toward a picked space. */
+.camera {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Spokes (hub to space) and twigs (space to page), drawn on in a sweep on first load. */
+.edge {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  animation: draw 900ms cubic-bezier(0.23, 1, 0.32, 1) var(--d, 0ms) both;
+  transition: opacity 400ms ease, stroke-width 400ms ease;
+}
+.spoke {
+  stroke: color-mix(in srgb, var(--c) 55%, transparent);
+  stroke-width: 1.6;
+}
+.twig {
+  stroke: color-mix(in srgb, var(--c) 42%, transparent);
+  stroke-width: 1;
+}
+:global(.dark) .spoke {
+  stroke: color-mix(in srgb, var(--c) 70%, transparent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--c) 80%, transparent));
+}
+:global(.dark) .twig {
+  stroke: color-mix(in srgb, var(--c) 55%, transparent);
+}
+.dim {
+  opacity: 0.18;
+}
+
+@keyframes draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Nodes pop in after their edge has drawn. */
+.pop {
+  animation: pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) var(--d, 0ms) backwards;
+}
+@keyframes pop {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* A page: a lit dot in its freshness colour. Its glow is the freshness, read at arm's length. */
+.star {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, white 45%, var(--c)) 0%, var(--c) 55%, var(--c2) 100%);
+  box-shadow: 0 0 0 2px var(--lb-surface), 0 0 10px 1px color-mix(in srgb, var(--c) 45%, transparent);
+  transition: opacity 400ms ease, box-shadow 300ms ease, scale 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+:global(.dark) .star {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--lb-surface) 70%, transparent), 0 0 14px 3px color-mix(in srgb, var(--c) 75%, transparent);
+}
+.star:hover,
+.star:focus-visible {
+  scale: 1.5;
+}
+/* Overdue pages flare: a ring breathes out of them. */
+.flare::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  border: 2px solid color-mix(in srgb, var(--c) 70%, transparent);
+  animation: flare 2.4s ease-out infinite;
+}
+@keyframes flare {
+  0% { opacity: 0.9; transform: scale(0.6); }
+  80%, 100% { opacity: 0; transform: scale(1.9); }
+}
+
+/* A space: a raised disc ringed by the colour of its least fresh page. */
+.planet {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: var(--lb-raised);
+  box-shadow:
+    var(--lb-shadow-cell),
+    0 0 0 3px color-mix(in srgb, var(--c) 70%, transparent),
+    0 0 26px -2px color-mix(in srgb, var(--c) 45%, transparent);
+  transition: box-shadow 300ms ease, opacity 400ms ease, scale 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+:global(.dark) .planet {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    0 0 0 2px color-mix(in srgb, var(--c) 85%, transparent),
+    0 0 32px 2px color-mix(in srgb, var(--c) 55%, transparent);
+}
+.planet:hover {
+  scale: 1.06;
+}
+.planet[aria-pressed="true"] {
+  scale: 1.1;
+  box-shadow:
+    var(--lb-shadow-cell),
+    0 0 0 3px var(--c),
+    0 0 0 9px color-mix(in srgb, var(--c) 18%, transparent),
+    0 0 36px 2px color-mix(in srgb, var(--c) 55%, transparent);
+}
+
+/* The hub: the whole knowledge base, a ring split by freshness around the verified share. */
+.hub {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  padding: 7px;
+  background: conic-gradient(from -90deg, var(--ring));
+  box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--lb-cat-green-to) 70%, transparent);
+}
+:global(.dark) .hub {
+  box-shadow: 0 0 60px 6px color-mix(in srgb, var(--lb-cat-green-to) 40%, transparent);
+}
+.hubInner {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--lb-raised);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 1px 2px rgb(0 0 0 / 0.06);
+}
+:global(.dark) .hubInner {
+  background: radial-gradient(circle at 40% 30%, color-mix(in srgb, var(--lb-raised) 80%, white 8%), var(--lb-raised));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14);
+}
+
+.label {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  text-align: center;
+  pointer-events: none;
+  transition: opacity 400ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camera,
+  .edge,
+  .pop,
+  .star,
+  .planet,
+  .label {
+    animation: none !important;
+    transition: opacity 200ms ease !important;
+  }
+  .flare::after {
+    animation: none;
+    opacity: 0.6;
+    transform: scale(1.4);
+  }
+}
+
+/* The hub as an in-flow element (the space page's centre, and its phone header). */
+.hubStatic {
+  position: relative;
+  transform: none;
+}
+
+/* Anything positioned by its centre (the orbit's hub and cells); the pop animation lands here. */
+.centered {
+  transform: translate(-50%, -50%);
+}

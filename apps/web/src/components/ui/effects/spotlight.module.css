@@ -1,0 +1,106 @@
+/*
+ * Spotlight: a pointer-following surface light plus a border glow that is brightest nearest the
+ * pointer. Driven entirely by custom properties the host element carries (--sx, --sy in px and
+ * --spot-o for presence), so a pointer move never re-renders React.
+ *
+ * The host must be `position: relative` and `isolation: isolate`: the layer sits at z-index -1,
+ * which keeps the light under the text (never over it) but above the host's own background.
+ *
+ * Light theme: additive light is invisible on white, so the light is a saturated accent tint at
+ * low alpha with normal blending, a brighter white core, and a cool shade at the far edge so the
+ * lit area reads lighter than its surroundings. The border core is the full accent.
+ * Dark theme: a cyan-tinted accent wash and a near-white border core, the teal-glass material lit
+ * from where the pointer is.
+ */
+
+.layer {
+  /* --sx/--sy are set inline on the host by the component; the layer reads them here. */
+  --spot-x: var(--sx, 50%);
+  --spot-y: var(--sy, 50%);
+  /* The host may set --spot-size inline (auto-sized on enter); the layer reads it here. */
+  --spot-r: var(--spot-size, 200px);
+  --spot-edge-width: 1.5px;
+
+  /* Light: a coloured light, because a white core is invisible on a white cell. */
+  --spot-wash: color-mix(in oklch, var(--spot-accent, var(--lb-accent)) 12%, transparent);
+  --spot-core: color-mix(in oklch, var(--spot-accent, var(--lb-accent)) 20%, transparent);
+  --spot-shade: rgb(16 24 40 / 0.04);
+  --spot-edge-core: var(--spot-accent, var(--lb-accent));
+  --spot-edge-glow: color-mix(in oklch, var(--spot-accent, var(--lb-accent)) 50%, transparent);
+
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: none;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--spot-o, 0);
+  transition: opacity 480ms var(--lb-ease, ease);
+}
+
+:global(.dark) .layer {
+  --spot-wash: color-mix(in oklch, var(--spot-accent, #6fd3ff) 22%, transparent);
+  --spot-core: rgb(215 245 255 / 0.26);
+  --spot-shade: transparent;
+  --spot-edge-core: #eafaff;
+  --spot-edge-glow: color-mix(in oklch, var(--spot-accent, #8fd0ff) 70%, transparent);
+}
+
+/* Entering is quick, leaving is a slow fade. */
+:hover > .layer {
+  transition-duration: 160ms;
+}
+
+/* Only pointers that hover get the light. Touch gets nothing. */
+@media (hover: hover) and (pointer: fine) {
+  .layer {
+    display: block;
+  }
+}
+
+.glow,
+.edge {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+/* The surface light: a white core inside an accent wash, with a cool shade past the wash. */
+.glow {
+  background:
+    radial-gradient(calc(var(--spot-r) * 0.35) circle at var(--spot-x) var(--spot-y), var(--spot-core), transparent 100%),
+    radial-gradient(var(--spot-r) circle at var(--spot-x) var(--spot-y), var(--spot-wash) 0%, transparent 75%),
+    radial-gradient(calc(var(--spot-r) * 1.5) circle at var(--spot-x) var(--spot-y), transparent 50%, var(--spot-shade) 100%);
+}
+
+/* The border: a ring the width of --spot-edge-width, lit by a radial centred on the pointer. */
+.edge {
+  padding: var(--spot-edge-width);
+  background: radial-gradient(
+    calc(var(--spot-r) * 0.85) circle at var(--spot-x) var(--spot-y),
+    var(--spot-edge-core) 0%,
+    var(--spot-edge-glow) 18%,
+    transparent 70%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+/* Reduced motion: no tracking. A still light sits at the top centre while the host is hovered. */
+@media (prefers-reduced-motion: reduce) {
+  .layer {
+    --spot-x: 50% !important;
+    --spot-y: 0% !important;
+    transition-duration: 0ms;
+  }
+  :hover > .layer {
+    opacity: 1;
+  }
+}

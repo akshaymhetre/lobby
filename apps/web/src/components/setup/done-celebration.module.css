@@ -1,0 +1,70 @@
+/* The setup finish: the six steps converge into a miniature of the company's Lobby. */
+
+.wash {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 60% at 50% 50%, color-mix(in oklab, var(--lb-glow-violet) 70%, transparent), transparent 70%),
+    radial-gradient(30% 50% at 60% 40%, color-mix(in oklab, var(--lb-glow-cyan) 70%, transparent), transparent 70%);
+}
+
+
+
+/* Lit once the last step lands: a violet and cyan halo, the reference video's glow colours. */
+.halo {
+  position: absolute;
+  inset: -4px;
+  z-index: -1;
+  border-radius: 20px;
+  box-shadow:
+    0 0 0 6px color-mix(in oklab, var(--lb-glow-violet) 80%, transparent),
+    0 0 48px 10px var(--lb-glow-violet),
+    0 0 90px 24px var(--lb-glow-cyan);
+}
+
+
+.disc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+}
+
+.disc[data-state="done"] {
+  color: var(--lb-cat-violet-on);
+  background: linear-gradient(180deg, var(--lb-cat-violet-from), var(--lb-cat-violet-to));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 6px 14px -6px var(--lb-cat-violet-to);
+}
+
+.disc[data-state="skipped"],
+.disc[data-state="none"] {
+  color: var(--lb-muted);
+  background: var(--lb-sunken);
+  box-shadow: var(--lb-shadow-inset);
+}
+
+/* The wizard step header's disc: larger, the step's lead mark. */
+.discLg {
+  width: 48px;
+  height: 48px;
+}
+
+/* The small green tick that pops onto a done step's disc as its light leaves. */
+.tick {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  color: var(--lb-cat-green-on);
+  background: var(--lb-cat-green-to);
+  box-shadow: 0 0 0 2px var(--lb-raised);
+}

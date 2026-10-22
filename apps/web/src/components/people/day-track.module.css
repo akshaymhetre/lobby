@@ -1,0 +1,110 @@
+/*
+ * The People area's one material: a day drawn as a track, working hours on it, and the blue "now".
+ * Bands wipe in from their start (clip-path, so the label inside never stretches), the now line
+ * draws top to bottom. Reduced motion: both become a short fade.
+ */
+.band {
+  animation: wipe 760ms var(--lb-ease-expo) both;
+  animation-delay: var(--d, 0ms);
+}
+
+.now {
+  animation: drop 620ms var(--lb-ease) both;
+  animation-delay: var(--d, 0ms);
+}
+
+.cells {
+  animation: fade 420ms var(--lb-ease) both;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes wipe {
+  /* Clip only: the band's text is never drawn translucent, so its contrast holds mid-build. */
+  from {
+    clip-path: inset(0 100% 0 0 round 12px);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 12px);
+  }
+}
+
+@keyframes drop {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A soft green halo under a "working now" band, so availability reads at arm's length. */
+.live {
+  box-shadow:
+    0 6px 18px -6px rgb(from var(--lb-cat-green-to) r g b / 0.55),
+    inset 0 1px 0 rgb(255 255 255 / 0.28);
+}
+
+:global(.dark) .live {
+  box-shadow:
+    0 0 22px -2px rgb(from var(--lb-cat-green-from) r g b / 0.55),
+    inset 0 1px 0 rgb(255 255 255 / 0.22);
+}
+
+/* The breathing dot beside "working now": slow, small, the only ambient motion in the area. */
+.pulse {
+  position: relative;
+}
+.pulse::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0;
+  animation: ping 2.4s var(--lb-ease) infinite;
+}
+
+@keyframes ping {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.45;
+  }
+  70%,
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .band,
+  .now,
+  .cells {
+    animation: fade 200ms linear both;
+  }
+  .pulse::after {
+    animation: none;
+  }
+}
+
+/*
+ * Off hours. Light uses the planner's hatch. Dark gets its own: a deeper well with brighter
+ * strokes, so "off" and "working hours" never read as the same dark cell.
+ */
+.off {
+  background-color: var(--lb-hatch-bg);
+  background-image: repeating-linear-gradient(135deg, transparent 0 5px, var(--lb-hatch-line) 5px 6px);
+}
+:global(.dark) .off {
+  background-color: rgb(4 16 19 / 0.6);
+  background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgb(160 225 235 / 0.15) 5px 6px);
+}

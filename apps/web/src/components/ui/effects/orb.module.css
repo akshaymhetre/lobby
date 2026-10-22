@@ -1,0 +1,316 @@
+/*
+ * Orb v2: the assistant's face. A glossy liquid sphere built from layered radial gradients,
+ * a drifting inner colour field (three blurred blobs rotating inside, clipped to the sphere),
+ * a specular highlight and a soft coloured contact shadow.
+ *
+ * Layers, back to front:
+ *   halo    an ambient tint behind the sphere (light: blue tint at low alpha; dark: teal glow)
+ *   shadow  the coloured contact shadow under the sphere
+ *   ring    two expanding rings while thinking
+ *   body    the breathing wrapper (transform only)
+ *     sphere  the clipped globe: base gradient, then
+ *       field   the rotating colour field with the three blobs
+ *       shade   fresnel: the edge darkens away from the light
+ *       lift    a white radial that brightens while typing and thinking
+ *       gloss   the specular highlight and the bottom-right rim bounce
+ *
+ * Only transform, opacity and filter animate. Everything scales from --orb-size.
+ */
+
+.orb {
+  --orb-size: 64px;
+  --orb-c-light: #dcecff;
+  --orb-c-mid: #9cc6ff;
+  --orb-c-deep: #4a86f3;
+  --orb-c-edge: #2a5fe6;
+  --orb-blob-a: #a6ecff;
+  --orb-blob-b: #3b7cf5;
+  --orb-blob-c: #b9a9ff;
+  --orb-shadow: rgb(42 95 230 / 0.34);
+  --orb-halo: rgb(47 124 246 / 0.18);
+  --orb-ring: rgb(42 95 230 / 0.62);
+  --orb-spin: 16s;
+  --orb-breath: 5.6s;
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--orb-size);
+  height: var(--orb-size);
+  pointer-events: none;
+  user-select: none;
+}
+
+:global(.dark) .orb {
+  --orb-c-light: #cfe6ff;
+  --orb-c-mid: #7fb4ff;
+  --orb-c-deep: #3a74ec;
+  --orb-c-edge: #1b48b8;
+  --orb-blob-a: #8df0ff;
+  --orb-blob-b: #3b7cf5;
+  --orb-blob-c: #a78dff;
+  --orb-shadow: rgb(80 220 230 / 0.36);
+  --orb-halo: rgb(80 220 230 / 0.3);
+  --orb-ring: rgb(116 240 255 / 0.7);
+}
+
+.orb > * {
+  position: absolute;
+  display: block;
+  border-radius: 9999px;
+}
+
+/* ------------------------------------------------------------------ ambient */
+
+.halo {
+  inset: -38%;
+  background: radial-gradient(circle, var(--orb-halo) 0%, transparent 62%);
+  opacity: 0.75;
+  transition: opacity 500ms ease;
+}
+
+.shadow {
+  left: 14%;
+  right: 14%;
+  bottom: -11%;
+  height: 24%;
+  background: radial-gradient(ellipse at center, var(--orb-shadow) 0%, transparent 70%);
+  filter: blur(calc(var(--orb-size) * 0.06));
+  transform-origin: 50% 50%;
+  animation: orb-shadow var(--orb-breath) ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------ thinking rings */
+
+.ring {
+  inset: 0;
+  opacity: 0;
+  box-shadow:
+    0 0 0 max(1.5px, calc(var(--orb-size) * 0.022)) var(--orb-ring),
+    0 0 calc(var(--orb-size) * 0.2) var(--orb-ring);
+}
+
+/* ------------------------------------------------------------------ the sphere */
+
+.body {
+  inset: 0;
+  will-change: transform;
+  animation: orb-breathe var(--orb-breath) ease-in-out infinite;
+}
+
+.sphere {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 9999px;
+  isolation: isolate;
+  /* lit from the upper left: the centre stays pale so the body reads as glass with the page behind it */
+  background: radial-gradient(circle at 42% 36%, var(--orb-c-light) 0%, var(--orb-c-mid) 38%, var(--orb-c-deep) 76%, var(--orb-c-edge) 100%);
+  /* overflow + radius clips the transformed blobs; the translateZ keeps Safari honest. */
+  transform: translateZ(0);
+}
+
+.sphere > * {
+  position: absolute;
+  display: block;
+  border-radius: 9999px;
+}
+
+.field {
+  inset: -22%;
+  animation: orb-spin var(--orb-spin) linear infinite;
+}
+
+.blob {
+  position: absolute;
+  display: block;
+  border-radius: 9999px;
+  filter: blur(calc(var(--orb-size) * 0.13));
+}
+
+.blobA {
+  top: 4%;
+  left: -2%;
+  width: 72%;
+  height: 72%;
+  background: var(--orb-blob-a);
+  opacity: 0.8;
+  animation: orb-drift-a 9s ease-in-out infinite alternate;
+}
+
+.blobB {
+  right: -4%;
+  bottom: -2%;
+  width: 68%;
+  height: 68%;
+  background: var(--orb-blob-b);
+  opacity: 0.85;
+  animation: orb-drift-b 11s ease-in-out infinite alternate;
+}
+
+.blobC {
+  top: 44%;
+  left: 38%;
+  width: 46%;
+  height: 46%;
+  background: var(--orb-blob-c);
+  opacity: 0.3;
+  animation: orb-drift-c 13s ease-in-out infinite alternate;
+}
+
+.shade {
+  inset: 0;
+  background: radial-gradient(circle at 32% 26%, transparent 50%, rgb(12 38 120 / 0.28) 100%);
+  box-shadow:
+    inset 0 0 calc(var(--orb-size) * 0.08) rgb(10 34 110 / 0.22),
+    inset calc(var(--orb-size) * -0.07) calc(var(--orb-size) * -0.09) calc(var(--orb-size) * 0.2) rgb(10 34 110 / 0.3);
+}
+
+.lift {
+  inset: 0;
+  background: radial-gradient(circle at 50% 42%, rgb(255 255 255 / 0.6) 0%, transparent 62%);
+  opacity: 0;
+  transition: opacity 450ms ease;
+}
+
+.gloss {
+  inset: 0;
+  background:
+    radial-gradient(ellipse 30% 22% at 31% 22%, rgb(255 255 255 / 1) 0%, rgb(255 255 255 / 0.8) 28%, rgb(255 255 255 / 0) 100%),
+    radial-gradient(ellipse 52% 38% at 34% 26%, rgb(255 255 255 / 0.55) 0%, rgb(255 255 255 / 0) 100%),
+    radial-gradient(circle at 74% 84%, rgb(255 255 255 / 0.38) 0%, rgb(255 255 255 / 0) 36%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.22) 0%, rgb(255 255 255 / 0) 40%);
+  /* a 1px top edge, a soft bounce from below, and the thin exit rim where light leaves the glass */
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.85),
+    inset calc(var(--orb-size) * -0.03) calc(var(--orb-size) * -0.05) calc(var(--orb-size) * 0.07) rgb(255 255 255 / 0.45),
+    inset calc(var(--orb-size) * -0.012) calc(var(--orb-size) * -0.018) calc(var(--orb-size) * 0.01) rgb(255 255 255 / 0.55);
+}
+
+:global(.dark) .gloss {
+  background:
+    radial-gradient(ellipse 30% 22% at 31% 22%, rgb(255 255 255 / 0.98) 0%, rgb(235 250 255 / 0.75) 28%, rgb(255 255 255 / 0) 100%),
+    radial-gradient(ellipse 52% 38% at 34% 26%, rgb(230 248 255 / 0.5) 0%, rgb(255 255 255 / 0) 100%),
+    radial-gradient(circle at 74% 84%, rgb(150 240 255 / 0.4) 0%, rgb(255 255 255 / 0) 36%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.18) 0%, rgb(255 255 255 / 0) 40%);
+  box-shadow:
+    inset 0 1px 1px rgb(220 250 255 / 0.7),
+    inset calc(var(--orb-size) * -0.03) calc(var(--orb-size) * -0.05) calc(var(--orb-size) * 0.07) rgb(160 240 255 / 0.5),
+    inset calc(var(--orb-size) * -0.012) calc(var(--orb-size) * -0.018) calc(var(--orb-size) * 0.01) rgb(200 250 255 / 0.6);
+}
+
+/* ------------------------------------------------------------------ states */
+
+/* typing: the field speeds up a little and the globe brightens */
+.orb[data-state="typing"] {
+  --orb-spin: 8s;
+  --orb-breath: 4.2s;
+}
+.orb[data-state="typing"] .lift {
+  opacity: 0.36;
+}
+.orb[data-state="typing"] .halo {
+  opacity: 1;
+}
+
+/* thinking: a faster swirl, a quicker breath, and two rings pulsing out */
+.orb[data-state="thinking"] {
+  --orb-spin: 3.6s;
+}
+.orb[data-state="thinking"] .body {
+  animation: orb-pulse 1.5s ease-in-out infinite;
+}
+.orb[data-state="thinking"] .shadow {
+  animation: orb-shadow 1.5s ease-in-out infinite;
+}
+.orb[data-state="thinking"] .lift {
+  opacity: 0.28;
+}
+.orb[data-state="thinking"] .halo {
+  opacity: 1;
+}
+.orb[data-state="thinking"] .ring {
+  animation: orb-ripple 1.5s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+.orb[data-state="thinking"] .ring:nth-child(4) {
+  animation-delay: 0.75s;
+}
+
+/* done: one settle bounce, a flash of light, then back to idle */
+.orb[data-state="done"] .body {
+  animation: orb-settle 720ms cubic-bezier(0.34, 1.4, 0.64, 1) 1 both;
+}
+.orb[data-state="done"] .lift {
+  animation: orb-flash 720ms ease-out 1 both;
+}
+.orb[data-state="done"] .ring:nth-child(3) {
+  animation: orb-ripple 720ms cubic-bezier(0.2, 0.6, 0.3, 1) 1 both;
+}
+
+/* off screen or hidden tab: everything holds */
+.orb[data-paused],
+.orb[data-paused] * {
+  animation-play-state: paused;
+}
+
+/* ------------------------------------------------------------------ keyframes */
+
+@keyframes orb-breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4%) scale(1.03); }
+}
+@keyframes orb-pulse {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-2%) scale(1.055); }
+}
+@keyframes orb-shadow {
+  0%, 100% { transform: scaleX(1); opacity: 1; }
+  50% { transform: scaleX(0.88); opacity: 0.7; }
+}
+@keyframes orb-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes orb-drift-a {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(20%, 16%) scale(1.18); }
+}
+@keyframes orb-drift-b {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-18%, -14%) scale(1.12); }
+}
+@keyframes orb-drift-c {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(14%, -20%) scale(0.9); }
+}
+@keyframes orb-ripple {
+  0% { transform: scale(0.98); opacity: 0.9; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+@keyframes orb-settle {
+  0% { transform: scale(1); }
+  38% { transform: scale(1.11); }
+  68% { transform: scale(0.965); }
+  100% { transform: scale(1); }
+}
+@keyframes orb-flash {
+  0% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+@keyframes orb-fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.72; }
+}
+
+/* ------------------------------------------------------------------ reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .orb *,
+  .orb[data-state="done"] .body,
+  .orb[data-state="done"] .lift,
+  .orb[data-state="thinking"] .ring {
+    animation: none !important;
+  }
+  /* Still, except a gentle opacity pulse while thinking. */
+  .orb[data-state="thinking"] .body {
+    animation: orb-fade 1.4s ease-in-out infinite !important;
+  }
+}

@@ -1,0 +1,909 @@
+{
+  "realm": "northwind",
+  "displayName": "Northwind Labs",
+  "enabled": true,
+  "sslRequired": "none",
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "rememberMe": true,
+  "ssoSessionIdleTimeout": 36000,
+  "ssoSessionMaxLifespan": 86400,
+  "groups": [
+    {
+      "name": "content-editors",
+      "path": "/content-editors"
+    },
+    {
+      "name": "engineering",
+      "path": "/engineering"
+    },
+    {
+      "name": "facilities",
+      "path": "/facilities"
+    },
+    {
+      "name": "finance",
+      "path": "/finance"
+    },
+    {
+      "name": "helpdesk-agents",
+      "path": "/helpdesk-agents"
+    },
+    {
+      "name": "it-team",
+      "path": "/it-team"
+    },
+    {
+      "name": "leadership",
+      "path": "/leadership"
+    },
+    {
+      "name": "lobby-admins",
+      "path": "/lobby-admins"
+    },
+    {
+      "name": "people-team",
+      "path": "/people-team"
+    },
+    {
+      "name": "product-design",
+      "path": "/product-design"
+    },
+    {
+      "name": "sales-marketing",
+      "path": "/sales-marketing"
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "lobby",
+      "name": "Lobby",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "lobby-demo-secret",
+      "rootUrl": "http://localhost:4100",
+      "baseUrl": "http://localhost:4100",
+      "redirectUris": [
+        "http://localhost:4100/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4100"
+      ],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:4100/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "groups"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "grafana",
+      "name": "Grafana",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "grafana-demo-secret",
+      "rootUrl": "http://localhost:4130",
+      "baseUrl": "http://localhost:4130",
+      "redirectUris": [
+        "http://localhost:4130/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4130"
+      ],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:4130/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "groups"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "expenses",
+      "name": "Expenses",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "expenses-demo-secret",
+      "rootUrl": "http://localhost:4140",
+      "baseUrl": "http://localhost:4140",
+      "redirectUris": [
+        "http://localhost:4140/oauth2/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:4140"
+      ],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:4140/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "groups"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "elena.vasquez",
+      "email": "elena.vasquez@northwind.example",
+      "emailVerified": true,
+      "firstName": "Elena",
+      "lastName": "Vasquez",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/leadership"
+      ]
+    },
+    {
+      "username": "david.kim",
+      "email": "david.kim@northwind.example",
+      "emailVerified": true,
+      "firstName": "David",
+      "lastName": "Kim",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/leadership",
+        "/engineering"
+      ]
+    },
+    {
+      "username": "amara.nwosu",
+      "email": "amara.nwosu@northwind.example",
+      "emailVerified": true,
+      "firstName": "Amara",
+      "lastName": "Nwosu",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/leadership",
+        "/people-team",
+        "/content-editors"
+      ]
+    },
+    {
+      "username": "tomas.herrera",
+      "email": "tomas.herrera@northwind.example",
+      "emailVerified": true,
+      "firstName": "Tomás",
+      "lastName": "Herrera",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/leadership",
+        "/finance"
+      ]
+    },
+    {
+      "username": "hannah.becker",
+      "email": "hannah.becker@northwind.example",
+      "emailVerified": true,
+      "firstName": "Hannah",
+      "lastName": "Becker",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/leadership",
+        "/sales-marketing"
+      ]
+    },
+    {
+      "username": "rohan.mehta",
+      "email": "rohan.mehta@northwind.example",
+      "emailVerified": true,
+      "firstName": "Rohan",
+      "lastName": "Mehta",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/leadership",
+        "/product-design"
+      ]
+    },
+    {
+      "username": "alex.morgan",
+      "email": "alex.morgan@northwind.example",
+      "emailVerified": true,
+      "firstName": "Alex",
+      "lastName": "Morgan",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/it-team",
+        "/lobby-admins",
+        "/helpdesk-agents"
+      ]
+    },
+    {
+      "username": "jordan.blake",
+      "email": "jordan.blake@northwind.example",
+      "emailVerified": true,
+      "firstName": "Jordan",
+      "lastName": "Blake",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/it-team",
+        "/helpdesk-agents"
+      ]
+    },
+    {
+      "username": "leila.haddad",
+      "email": "leila.haddad@northwind.example",
+      "emailVerified": true,
+      "firstName": "Leila",
+      "lastName": "Haddad",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/it-team",
+        "/helpdesk-agents"
+      ]
+    },
+    {
+      "username": "priya.raman",
+      "email": "priya.raman@northwind.example",
+      "emailVerified": true,
+      "firstName": "Priya",
+      "lastName": "Raman",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/people-team",
+        "/helpdesk-agents",
+        "/content-editors"
+      ]
+    },
+    {
+      "username": "marcus.reid",
+      "email": "marcus.reid@northwind.example",
+      "emailVerified": true,
+      "firstName": "Marcus",
+      "lastName": "Reid",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/people-team",
+        "/helpdesk-agents"
+      ]
+    },
+    {
+      "username": "sofia.lindqvist",
+      "email": "sofia.lindqvist@northwind.example",
+      "emailVerified": true,
+      "firstName": "Sofia",
+      "lastName": "Lindqvist",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/people-team",
+        "/helpdesk-agents"
+      ]
+    },
+    {
+      "username": "maya.chen",
+      "email": "maya.chen@northwind.example",
+      "emailVerified": true,
+      "firstName": "Maya",
+      "lastName": "Chen",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/engineering"
+      ]
+    },
+    {
+      "username": "nikolai.petrov",
+      "email": "nikolai.petrov@northwind.example",
+      "emailVerified": true,
+      "firstName": "Nikolai",
+      "lastName": "Petrov",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/engineering"
+      ]
+    },
+    {
+      "username": "grace.okoye",
+      "email": "grace.okoye@northwind.example",
+      "emailVerified": true,
+      "firstName": "Grace",
+      "lastName": "Okoye",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/engineering"
+      ]
+    },
+    {
+      "username": "kenji.watanabe",
+      "email": "kenji.watanabe@northwind.example",
+      "emailVerified": true,
+      "firstName": "Kenji",
+      "lastName": "Watanabe",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/engineering"
+      ]
+    },
+    {
+      "username": "isabel.duarte",
+      "email": "isabel.duarte@northwind.example",
+      "emailVerified": true,
+      "firstName": "Isabel",
+      "lastName": "Duarte",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/engineering"
+      ]
+    },
+    {
+      "username": "arjun.iyer",
+      "email": "arjun.iyer@northwind.example",
+      "emailVerified": true,
+      "firstName": "Arjun",
+      "lastName": "Iyer",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/engineering"
+      ]
+    },
+    {
+      "username": "chloe.martin",
+      "email": "chloe.martin@northwind.example",
+      "emailVerified": true,
+      "firstName": "Chloe",
+      "lastName": "Martin",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/engineering"
+      ]
+    },
+    {
+      "username": "omar.farouk",
+      "email": "omar.farouk@northwind.example",
+      "emailVerified": true,
+      "firstName": "Omar",
+      "lastName": "Farouk",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/engineering"
+      ]
+    },
+    {
+      "username": "lucy.zhang",
+      "email": "lucy.zhang@northwind.example",
+      "emailVerified": true,
+      "firstName": "Lucy",
+      "lastName": "Zhang",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/engineering"
+      ]
+    },
+    {
+      "username": "sam.okafor",
+      "email": "sam.okafor@northwind.example",
+      "emailVerified": true,
+      "firstName": "Sam",
+      "lastName": "Okafor",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/engineering"
+      ]
+    },
+    {
+      "username": "noah.fischer",
+      "email": "noah.fischer@northwind.example",
+      "emailVerified": true,
+      "firstName": "Noah",
+      "lastName": "Fischer",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/product-design"
+      ]
+    },
+    {
+      "username": "aisha.bello",
+      "email": "aisha.bello@northwind.example",
+      "emailVerified": true,
+      "firstName": "Aisha",
+      "lastName": "Bello",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/product-design"
+      ]
+    },
+    {
+      "username": "mateo.rossi",
+      "email": "mateo.rossi@northwind.example",
+      "emailVerified": true,
+      "firstName": "Mateo",
+      "lastName": "Rossi",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/product-design"
+      ]
+    },
+    {
+      "username": "yuki.tanaka",
+      "email": "yuki.tanaka@northwind.example",
+      "emailVerified": true,
+      "firstName": "Yuki",
+      "lastName": "Tanaka",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/product-design",
+        "/content-editors"
+      ]
+    },
+    {
+      "username": "ben.carter",
+      "email": "ben.carter@northwind.example",
+      "emailVerified": true,
+      "firstName": "Ben",
+      "lastName": "Carter",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/finance",
+        "/helpdesk-agents"
+      ]
+    },
+    {
+      "username": "fatima.zahra",
+      "email": "fatima.zahra@northwind.example",
+      "emailVerified": true,
+      "firstName": "Fatima",
+      "lastName": "Zahra",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/finance",
+        "/helpdesk-agents"
+      ]
+    },
+    {
+      "username": "daniel.osei",
+      "email": "daniel.osei@northwind.example",
+      "emailVerified": true,
+      "firstName": "Daniel",
+      "lastName": "Osei",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/finance"
+      ]
+    },
+    {
+      "username": "olivia.brooks",
+      "email": "olivia.brooks@northwind.example",
+      "emailVerified": true,
+      "firstName": "Olivia",
+      "lastName": "Brooks",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/sales-marketing"
+      ]
+    },
+    {
+      "username": "ethan.wright",
+      "email": "ethan.wright@northwind.example",
+      "emailVerified": true,
+      "firstName": "Ethan",
+      "lastName": "Wright",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/sales-marketing"
+      ]
+    },
+    {
+      "username": "zara.ahmed",
+      "email": "zara.ahmed@northwind.example",
+      "emailVerified": true,
+      "firstName": "Zara",
+      "lastName": "Ahmed",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/sales-marketing",
+        "/content-editors"
+      ]
+    },
+    {
+      "username": "lukas.novak",
+      "email": "lukas.novak@northwind.example",
+      "emailVerified": true,
+      "firstName": "Lukas",
+      "lastName": "Novak",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/sales-marketing"
+      ]
+    },
+    {
+      "username": "mia.johansson",
+      "email": "mia.johansson@northwind.example",
+      "emailVerified": true,
+      "firstName": "Mia",
+      "lastName": "Johansson",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/sales-marketing"
+      ]
+    },
+    {
+      "username": "ravi.shankar",
+      "email": "ravi.shankar@northwind.example",
+      "emailVerified": true,
+      "firstName": "Ravi",
+      "lastName": "Shankar",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/engineering"
+      ]
+    },
+    {
+      "username": "emily.ross",
+      "email": "emily.ross@northwind.example",
+      "emailVerified": true,
+      "firstName": "Emily",
+      "lastName": "Ross",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/people-team",
+        "/facilities",
+        "/helpdesk-agents"
+      ]
+    },
+    {
+      "username": "carlos.mendes",
+      "email": "carlos.mendes@northwind.example",
+      "emailVerified": true,
+      "firstName": "Carlos",
+      "lastName": "Mendes",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/people-team",
+        "/facilities",
+        "/helpdesk-agents"
+      ]
+    },
+    {
+      "username": "anya.kowalski",
+      "email": "anya.kowalski@northwind.example",
+      "emailVerified": true,
+      "firstName": "Anya",
+      "lastName": "Kowalski",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/it-team",
+        "/helpdesk-agents"
+      ]
+    },
+    {
+      "username": "felix.wagner",
+      "email": "felix.wagner@northwind.example",
+      "emailVerified": true,
+      "firstName": "Felix",
+      "lastName": "Wagner",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/sales-marketing"
+      ]
+    },
+    {
+      "username": "nora.sullivan",
+      "email": "nora.sullivan@northwind.example",
+      "emailVerified": true,
+      "firstName": "Nora",
+      "lastName": "Sullivan",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "northwind",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/leadership"
+      ]
+    }
+  ]
+}

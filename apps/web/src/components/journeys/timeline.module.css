@@ -1,0 +1,105 @@
+/*
+ * The "Up next" arrival: once the light has run down the spine to today, the next step's cell
+ * gets one soft pulse of a violet ring (an onboarding step's colour), then settles. Opacity and
+ * transform only.
+ */
+.arrive::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-card);
+  pointer-events: none;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--lb-cat-violet-to) 70%, transparent),
+    0 0 0 6px color-mix(in srgb, var(--lb-cat-violet-to) 10%, transparent),
+    0 0 28px color-mix(in srgb, var(--lb-cat-violet-to) 22%, transparent);
+  opacity: 0;
+  animation: arrive 1.4s cubic-bezier(0.23, 1, 0.32, 1) 1 both;
+}
+:global(.dark) .arrive::after {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--lb-cat-violet-from) 80%, transparent),
+    0 0 0 6px color-mix(in srgb, var(--lb-cat-violet-from) 14%, transparent),
+    0 0 36px color-mix(in srgb, var(--lb-cat-violet-from) 36%, transparent);
+}
+
+@keyframes arrive {
+  0% { opacity: 0; transform: scale(0.995); }
+  18% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.004); }
+}
+
+/* The dashed today rule, horizontal, in the same blue and rhythm as the planner's today line. */
+.todayRule {
+  background-image: repeating-linear-gradient(90deg, var(--lb-now) 0 6px, transparent 6px 11px);
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrive::after {
+    animation: none;
+  }
+}
+
+/* The open step cells: "Up next" carries a violet hairline, an overdue step a red one. */
+.nextCell {
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, var(--lb-cat-violet-to) 55%, transparent),
+    var(--lb-shadow-cell);
+}
+/* Late: a red-tinted cell (no outline); the "Overdue by" pill carries the word. */
+.lateCell {
+  background-color: color-mix(in srgb, var(--lb-danger-soft) 70%, var(--lb-raised));
+}
+
+/*
+ * Wave 3: the "Up next" step is a filled violet category block (an onboarding step, the Home
+ * planner's gradient), not a white cell with a hairline. The kit's ink tokens are re-pointed inside
+ * it, so every child (title, meta, the target chip, the buttons, the checkbox) reads white on violet
+ * without the step card knowing. White on both stops clears 4.5:1.
+ */
+.filled {
+  background-image: linear-gradient(180deg, var(--lb-cat-violet-from), var(--lb-cat-violet-to));
+  color: #fff;
+  --lb-fg: #ffffff;
+  --lb-muted: rgb(255 255 255 / 0.94);
+  --lb-subtle: rgb(255 255 255 / 0.9);
+  --lb-sunken: rgb(28 0 80 / 0.22);
+  --lb-hover: rgb(28 0 80 / 0.32);
+  --lb-raised: rgb(255 255 255 / 0.16);
+  --lb-selected: rgb(255 255 255 / 0.22);
+  --lb-border: rgb(255 255 255 / 0.32);
+  --lb-border-strong: rgb(255 255 255 / 0.8);
+  --lb-cat-violet-text: #ffffff;
+  --lb-now: #ffffff;
+  --lb-now-text: #ffffff;
+  --lb-accent: #ffffff;
+  --lb-accent-hover: rgb(255 255 255 / 0.9);
+  --lb-accent-fg: var(--lb-cat-violet-to);
+  --lb-accent-ring: #ffffff;
+  --lb-accent-text: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.32),
+    0 16px 34px -16px var(--lb-cat-violet-from);
+}
+:global(.dark) .filled {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    0 14px 36px -14px var(--lb-cat-violet-from),
+    0 0 44px -12px var(--lb-cat-violet-from);
+}
+/* A soft sheen from the top left, the block's gloss. */
+.filled::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 0% 0%, rgb(255 255 255 / 0.2), transparent 55%);
+}
+
+/* The checkbox on the filled block: a white box you can see, frosted inside. */
+.filled [role="checkbox"] {
+  border-color: #ffffff;
+  background-color: rgb(255 255 255 / 0.16);
+}

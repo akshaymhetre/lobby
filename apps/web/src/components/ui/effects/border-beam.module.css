@@ -1,0 +1,341 @@
+/*
+ * BorderBeam: a thin light beam that travels around a card's rounded border, with a soft surface
+ * glow inside the card that moves with it and a faint bloom outside the edge.
+ *
+ * One clock drives all three layers: the component animates the registered custom properties
+ * below on `.root` with the Web Animations API, and every layer derives its own picture from them:
+ *   --bb-angle  the conic angle of the beam head (unwrapped, 0 -> 360deg per loop)
+ *   --bb-head   the angular length of the hot core at the current position
+ *   --bb-tail   the angular length of the fading tail at the current position
+ *   --bb-x/y    the head's position in px, for the surface glow
+ *   --bb-rot    the direction of travel, so the glow streak lies along the edge
+ * The angles are computed per keyframe from the box's real geometry, so the beam moves at a
+ * constant speed along the perimeter and keeps a constant tail LENGTH (a plain conic sweep speeds
+ * up along long edges and the tail stretches with it).
+ *
+ * Masking the conic gradient to the border ring (mask-composite: exclude) means the beam follows
+ * the exact rounded outline, including the corners, with no path maths of its own.
+ */
+
+@property --bb-angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+@property --bb-head {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 20deg;
+}
+@property --bb-tail {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 60deg;
+}
+@property --bb-x {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+@property --bb-y {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+@property --bb-rot {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+.root {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--bb-r, inherit);
+  pointer-events: none;
+  /* Below the card's content, above its background: the host must be a stacking context
+     (`isolate`), or the beam paints behind the host's background and disappears. */
+  z-index: -1;
+  /* size: md, intensity: vivid */
+  --bb-stroke: 2px;
+  --bb-soft: 9px;
+  /* The glow is a streak: long along the edge, reaching well into the card. */
+  --bb-glow-w: clamp(320px, 120cqmax, 1000px);
+  --bb-glow-h: clamp(160px, 90cqmin, 300px);
+  --bb-bloom: 18px;
+  --bb-soft-o: 0.5;
+  --bb-glow-o: 0.26;
+}
+.sm {
+  --bb-stroke: 1.5px;
+  --bb-soft: 6px;
+  --bb-glow-w: clamp(160px, 110cqmax, 560px);
+  --bb-glow-h: clamp(80px, 100cqmin, 160px);
+  --bb-bloom: 12px;
+}
+.subtle {
+  --bb-stroke: 1.5px;
+  --bb-soft: 6px;
+  --bb-glow-w: clamp(200px, 72cqmax, 560px);
+  --bb-glow-h: clamp(90px, 44cqmin, 150px);
+  --bb-bloom: 14px;
+  --bb-soft-o: 0.32;
+  --bb-glow-o: 0.13;
+}
+.subtle.sm {
+  --bb-stroke: 1.25px;
+  --bb-soft: 4px;
+  --bb-glow-w: clamp(110px, 64cqmax, 320px);
+  --bb-glow-h: clamp(56px, 60cqmin, 90px);
+  --bb-bloom: 10px;
+}
+
+/* ------------------------------------------------------------------ tones
+ * Light: a saturated DARKER core (the `-text` token) and the same colour as a normal-blend tint,
+ * because additive light is invisible on white; what reads on paper is a coloured shadow.
+ * Dark: the bright token as the core, mixed towards white at the very front, and a screen-blended
+ * glow so the surface lights up where the beam passes.
+ */
+.root {
+  --bb-core: var(--lb-accent-text);
+  --bb-tint: var(--lb-accent);
+}
+.accent {
+  --bb-core: var(--lb-accent-text);
+  --bb-tint: var(--lb-accent);
+}
+.danger {
+  /* Light danger leans towards the deep red-orange of the coral category so it reads on the
+     yellow announcement block as well as on white. */
+  --bb-core: var(--lb-danger-text);
+  --bb-tint: color-mix(in oklch, var(--lb-danger) 60%, var(--lb-cat-coral-from));
+}
+:global(.dark) .danger {
+  --bb-tint: var(--lb-danger);
+}
+.now {
+  --bb-core: var(--lb-now-text);
+  --bb-tint: var(--lb-now);
+}
+.violet {
+  --bb-core: var(--lb-cat-violet-text);
+  --bb-tint: var(--lb-cat-violet-from);
+}
+.amber {
+  /* Light amber sits on the yellow announcement block as often as on white, so the core leans
+     towards the darker amber text token to stay visible on both. */
+  --bb-core: color-mix(in oklch, var(--lb-warning) 55%, var(--lb-cat-amber-text));
+  --bb-tint: var(--lb-warning);
+}
+.green {
+  --bb-core: var(--lb-success-text);
+  --bb-tint: var(--lb-success);
+}
+
+.root {
+  /* Light theme treatment: the beam is the saturated colour token, lifted towards white at the
+     very front; the tint under it is the same colour at low alpha, blended normally (a coloured
+     tint is what light leaves on paper); no bloom outside the edge, which smears on a flat page. */
+  --bb-line: var(--bb-tint);
+  --bb-hot: color-mix(in oklch, var(--bb-line) 58%, white);
+  --bb-core-a: var(--bb-line);
+  --bb-tail-a: color-mix(in oklch, var(--bb-line) 70%, transparent);
+  --bb-soft-a: color-mix(in oklch, var(--bb-line) 45%, transparent);
+  /* Wave 3: no tinted fill on white (it read as a pink smear). A whisper of surface tint, and the
+     colour goes OUTSIDE the edge instead: a coloured outer glow, about 0 0 24px at 35%. */
+  --bb-glow-a: color-mix(in oklch, var(--bb-line) calc(var(--bb-glow-o) * 30%), transparent);
+  --bb-glow-blend: normal;
+  --bb-bloom-a: color-mix(in oklch, var(--bb-line) 35%, transparent);
+  --bb-edge-a: color-mix(in oklch, var(--bb-line) 85%, transparent);
+  --bb-edge-glow: color-mix(in oklch, var(--bb-line) 14%, transparent);
+}
+:global(.dark) .root {
+  --bb-core: var(--bb-tint);
+  --bb-line: var(--bb-tint);
+  --bb-hot: color-mix(in oklch, var(--bb-core) 30%, white);
+  --bb-core-a: var(--bb-core);
+  --bb-tail-a: color-mix(in oklch, var(--bb-core) 65%, transparent);
+  --bb-soft-a: color-mix(in oklch, var(--bb-core) 60%, transparent);
+  /* Additive light, from a darker and more saturated version of the tone, so red over teal stays
+     red instead of going brown the way a screen-blended pastel does. */
+  --bb-glow-a: oklch(from var(--bb-core) 0.6 calc(c * 1.45) h / calc(var(--bb-glow-o) * 2.7));
+  --bb-glow-blend: plus-lighter;
+  --bb-bloom-a: color-mix(in oklch, var(--bb-core) 45%, transparent);
+  /* Dark: the inner halo is wide and faint so it never reads as a second, inset card edge. */
+  --bb-soft-o: 0.22;
+  --bb-edge-a: color-mix(in oklch, var(--bb-core) 80%, transparent);
+  --bb-edge-glow: color-mix(in oklch, var(--bb-core) 30%, transparent);
+}
+
+/* ------------------------------------------------------------------ layers */
+
+/* Clips the glow and the beam to the card's own rounded shape. */
+.frame {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  container-type: size;
+  opacity: 0;
+}
+
+/* The surface glow: a soft disc centred on the beam head, so the half inside the card lights the
+   surface where the beam passes and the rest is clipped away. */
+.glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--bb-glow-w);
+  height: var(--bb-glow-h);
+  margin: calc(var(--bb-glow-h) / -2) calc(var(--bb-glow-w) / -2);
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    var(--bb-glow-a) 0%,
+    color-mix(in oklch, var(--bb-glow-a) 60%, transparent) 30%,
+    color-mix(in oklch, var(--bb-glow-a) 20%, transparent) 62%,
+    transparent 100%
+  );
+  mix-blend-mode: var(--bb-glow-blend);
+  transform: translate3d(var(--bb-x), var(--bb-y), 0) rotate(var(--bb-rot));
+  will-change: transform;
+}
+
+/* The beam itself, and a thicker blurred copy under it (the halo hugging the inside of the edge). */
+.ring,
+.soft {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--bb-angle),
+    transparent 0deg,
+    transparent calc(360deg - var(--bb-head) - var(--bb-tail)),
+    color-mix(in oklch, var(--bb-tail-a) 22%, transparent) calc(360deg - var(--bb-head) - var(--bb-tail) * 0.5),
+    var(--bb-tail-a) calc(360deg - var(--bb-head)),
+    var(--bb-core-a) calc(360deg - var(--bb-head) * 0.4),
+    var(--bb-hot) 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.ring {
+  padding: var(--bb-stroke);
+}
+.soft {
+  padding: var(--bb-soft);
+  filter: blur(calc(var(--bb-soft) * 0.8));
+  opacity: var(--bb-soft-o);
+  background: conic-gradient(
+    from var(--bb-angle),
+    transparent 0deg,
+    transparent calc(360deg - var(--bb-head) - var(--bb-tail)),
+    color-mix(in oklch, var(--bb-soft-a) 45%, transparent) calc(360deg - var(--bb-head)),
+    var(--bb-soft-a) 360deg
+  );
+}
+
+/* The bloom: the same wedge, on a band just OUTSIDE the card, blurred. Needs the parent to leave
+   room (no overflow clip) to show; harmless when it is clipped. */
+.bloom {
+  position: absolute;
+  inset: calc(var(--bb-bloom) * -1);
+  border-radius: calc(var(--bb-r, 16px) + var(--bb-bloom));
+  padding: var(--bb-bloom);
+  opacity: 0;
+  filter: blur(calc(var(--bb-bloom) * 0.55));
+  background: conic-gradient(
+    from var(--bb-angle),
+    transparent 0deg,
+    transparent calc(360deg - var(--bb-head) - var(--bb-tail) * 0.6),
+    color-mix(in oklch, var(--bb-bloom-a) 40%, transparent) calc(360deg - var(--bb-head)),
+    var(--bb-bloom-a) 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* The static highlight: a short light on the top edge. Shown after the last loop, and as the whole
+   effect under reduced motion. */
+.edge {
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: var(--bb-stroke);
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--bb-edge-a) 30%, var(--bb-edge-a) 70%, transparent);
+  box-shadow: 0 0 14px 3px var(--bb-edge-glow);
+  opacity: 0;
+  transition: opacity 900ms var(--lb-ease);
+}
+
+/* ------------------------------------------------------------------ states */
+
+.root[data-state="running"] .frame,
+.root[data-state="running"] .bloom {
+  transition: opacity 240ms var(--lb-ease);
+}
+.root[data-state="running"] .frame {
+  opacity: 1;
+}
+.root[data-state="running"] .bloom {
+  opacity: 0.9;
+}
+/* Light (wave 3): a saturated 2px stroke and a coloured OUTER glow around the whole card
+   (0 0 24px at 35%) while the beam runs. No travelling bloom and no inner blurred ring: on paper
+   both read as grey smudges and a doubled inner rectangle. The glow fades with the run. */
+.root:not(:global(.dark) *) .bloom,
+.root:not(:global(.dark) *) .soft,
+.root:not(:global(.dark) *) .glow {
+  display: none;
+}
+.root:not(:global(.dark) *)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 24px 0 color-mix(in oklch, var(--bb-line) 35%, transparent), 0 0 0 1px color-mix(in oklch, var(--bb-line) 22%, transparent);
+  opacity: 0;
+  transition: opacity 520ms var(--lb-ease);
+}
+.root.sm:not(:global(.dark) *)::after,
+.root.subtle:not(:global(.dark) *)::after {
+  box-shadow: 0 0 14px 0 color-mix(in oklch, var(--bb-line) 28%, transparent);
+}
+.root[data-state="running"]:not(:global(.dark) *)::after {
+  opacity: 1;
+  transition-duration: 240ms;
+}
+
+.root[data-state="settled"] .frame,
+.root[data-state="settled"] .bloom,
+.root[data-state="idle"] .frame,
+.root[data-state="idle"] .bloom {
+  opacity: 0;
+  transition: opacity 520ms var(--lb-ease);
+}
+.root[data-state="settled"] .edge,
+.root[data-state="static"] .edge {
+  opacity: 1;
+}
+.root[data-state="static"] .frame,
+.root[data-state="static"] .bloom {
+  display: none;
+}
+
+/* Reduced motion, before and without JS: no travel, the static edge only. */
+@media (prefers-reduced-motion: reduce) {
+  .root .frame,
+  .root .bloom {
+    display: none;
+  }
+  .root .edge {
+    opacity: 1;
+    transition: none;
+  }
+}

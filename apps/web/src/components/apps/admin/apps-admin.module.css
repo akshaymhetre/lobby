@@ -1,0 +1,12 @@
+/* The usage ribbon: each app's share of the month's opens, growing in from the left on load. */
+.seg {
+  transform-origin: left center;
+  scale: 0 1;
+  animation: grow 700ms var(--lb-ease) forwards;
+}
+@keyframes grow {
+  to { scale: 1 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seg { scale: 1 1; animation: none; }
+}
